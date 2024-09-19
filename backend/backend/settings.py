@@ -150,8 +150,8 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'SERIALIZERS': {
-        'user': 'api.serializers.UserSerializer',
-        'current_user': 'api.serializers.CurrentUserSerializer',
+        'user': 'users.serializers.UserSerializer',
+        'current_user': 'users.serializers.CurrentUserSerializer',
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
