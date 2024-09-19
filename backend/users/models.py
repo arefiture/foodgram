@@ -68,6 +68,7 @@ class Subscription(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = 'cookbook_subscription'
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 
