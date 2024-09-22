@@ -50,8 +50,20 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
 
+    tags = models.ManyToManyField(
+        Tag, through='RecipeTags'
+    )
+    author = models.ForeignKey(
+        to=User, verbose_name='Автор рецепта', on_delete=models.CASCADE
+    )
+    ingredients = models.ManyToManyField(
+        Ingredient, through='RecipeIngredients'
+    )
     name = models.CharField(
         verbose_name='Наименование рецепта', max_length=256
+    )
+    image = models.ImageField(
+        verbose_name='Путь до картинки', blank=True, upload_to='recipe/'
     )
     text = models.TextField(
         verbose_name='Описание'
@@ -64,17 +76,8 @@ class Recipe(models.Model):
                 message='Время не может быть меньше 1 минуты'),
         ]
     )
-    image = models.ImageField(
-        verbose_name='Путь до картинки', blank=True, upload_to='recipe/'
-    )
-    author = models.ForeignKey(
-        to=User, verbose_name='Автор рецепта', on_delete=models.CASCADE
-    )
-    tags = models.ManyToManyField(
-        Tag, through='RecipeTags'
-    )
     short_link = models.CharField(
-        verbose_name='Короткая ссылка', default=generate_short_link(),
+        verbose_name='Короткая ссылка', default=generate_short_link,
         max_length=6
     )
 
@@ -102,3 +105,26 @@ class RecipeTags(models.Model):
         default_related_name = 'recipe_tags'
         verbose_name = 'Тег рецепта'
         verbose_name_plural = 'Теги рецептов'
+
+
+class RecipeIngredients(models.Model):
+    recipe = models.ForeignKey(
+        to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
+    )
+    ingredient = models.ForeignKey(
+        to=Ingredient, verbose_name='Ингредиент', on_delete=models.CASCADE
+    )
+    amount = models.IntegerField(
+        verbose_name='Количество в рецепте',
+        validators=[
+            MinValueValidator(
+                1,
+                message='Количество должно быть равно 1 или больше.'),
+        ]
+    )
+
+    class Meta:
+        db_table = 'cookbook_recipe_ingredients'
+        default_related_name = 'recipe_ingredients'
+        verbose_name = 'Ингредиент рецепта'
+        verbose_name_plural = 'Ингредиенты рецептов'

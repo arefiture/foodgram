@@ -1,0 +1,20 @@
+INSERT INTO cookbook_ingredient (
+                                    name,
+                                    measurement_unit,
+                                    id
+                                )
+                                VALUES (
+                                    'абрикосовое варенье',
+                                    'г',
+                                    1
+                                ),
+                                (
+                                    'абрикосовое пюре',
+                                    'г',
+                                    2
+                                ),
+                                (
+                                    'абрикосовый джем',
+                                    'г',
+                                    3
+                                );
