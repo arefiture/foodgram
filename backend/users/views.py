@@ -1,15 +1,24 @@
+from django.shortcuts import get_object_or_404
 from djoser import views as djoser_views
 from djoser.permissions import CurrentUserOrAdmin
 from rest_framework import status, response
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 
-from users.models import User
-from users.serializers import AvatarSerializer, UserSerializer
+from users.models import Subscription, User
+from users.serializers import (
+    AvatarSerializer,
+    SubscriptionGetSerializer,
+    SubscriptionChangedSerializer,
+    UserSerializer
+)
 
 
 class UserViewSet(djoser_views.UserViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    pagination_class = PageNumberPagination
+    pagination_class.page_size_query_param = 'limit'
 
     @action(
         ["get", "put", "patch", "delete"],
@@ -42,3 +51,45 @@ class UserViewSet(djoser_views.UserViewSet):
         return response.Response(
             {'avatar': str(image_url)}, status=status.HTTP_200_OK
         )
+
+    @action(['GET'], detail=False, url_path='subscriptions')
+    def subscriptions(self, request):
+        user = request.user
+        queryset = User.objects.filter(followings__follower=user)
+        pages = self.paginate_queryset(queryset)
+        self.serializer_class = SubscriptionGetSerializer
+        serializer = self.get_serializer(
+            pages,
+            many=True,
+            context={'request': request}
+        )
+        return self.get_paginated_response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=('POST', 'DELETE'),
+        url_path='subscribe',
+        url_name='subscribe',
+    )
+    def subscribe(self, request, id):
+        user = request.user
+        author = get_object_or_404(User, id=id)
+        serializer = SubscriptionChangedSerializer(
+            data={'followed': author.id, 'follower': user.id}
+        )
+        if request.method == 'POST':
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return response.Response(
+                serializer.data, status=status.HTTP_201_CREATED
+            )
+        subscription = Subscription.objects.filter(
+            followed=author, follower=user
+        )
+        if not subscription.exists():
+            return response.Response(
+                {'errors': 'У вас нет данного пользователя в подписчиках.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        subscription.delete()
+        return response.Response(status=status.HTTP_204_NO_CONTENT)

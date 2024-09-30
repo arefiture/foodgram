@@ -60,10 +60,12 @@ class User(AbstractUser):
 
 class Subscription(models.Model):
     followed = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='followings'
+        User, on_delete=models.CASCADE, related_name='followings',
+        verbose_name='Автор рецепта'
     )
     follower = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='followers'
+        User, on_delete=models.CASCADE, related_name='followers',
+        verbose_name='Подписчик'
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

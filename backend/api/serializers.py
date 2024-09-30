@@ -46,20 +46,6 @@ class RecipeIngredientsGetSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-# class RecipeGetSerializer(serializers.ModelSerializer):
-#     image = Base64ImageField()
-#     tags = TagSerializer(
-#         many=True, read_only=True
-#     )
-#     author = UserSerializer(read_only=True)
-
-#     class Meta:
-#         model = Recipe
-#         fields = (
-#             'id', 'tags', 'author', 'name', 'image', 'text', 'cooking_time',
-#         )
-
-
 class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(
