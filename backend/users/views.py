@@ -75,7 +75,8 @@ class UserViewSet(djoser_views.UserViewSet):
         user = request.user
         author = get_object_or_404(User, id=id)
         serializer = SubscriptionChangedSerializer(
-            data={'followed': author.id, 'follower': user.id}
+            data={'followed': author.id, 'follower': user.id},
+            context={'request': request}
         )
         if request.method == 'POST':
             serializer.is_valid(raise_exception=True)

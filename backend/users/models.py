@@ -70,6 +70,12 @@ class Subscription(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('followed', 'follower'),
+                name='unique_followed_foolower'
+            )
+        ]
         db_table = 'cookbook_subscription'
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'

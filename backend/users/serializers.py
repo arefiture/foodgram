@@ -1,9 +1,11 @@
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from api.models import Recipe
 from core.serializers import Base64ImageField
 from users.models import Subscription, User
+from users.validators import SubscribeUniqueValidator
 
 
 class AvatarSerializer(serializers.Serializer):
@@ -100,8 +102,21 @@ class SubscriptionChangedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = ('followed', 'follower')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscription.objects.all(),
+                fields=('followed', 'follower'),
+                message='Нельзя повторно подписаться на пользователя'
+            ),
+            SubscribeUniqueValidator(
+                fields=('followed', 'follower')
+            )
+        ]
 
     def to_representation(self, instance):
         subscription = super().to_representation(instance)
-        subscription = SubscriptionGetSerializer(instance.follower).data
+        subscription = SubscriptionGetSerializer(
+            instance.follower,
+            context={'request': self.context.get('request')}
+        ).data
         return subscription
