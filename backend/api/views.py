@@ -16,10 +16,12 @@ from api.filters import RecipeFilter
 from api.models import (
     Ingredient,
     Recipe,
+    RecipeFavorite,
     ShoppingCart,
     Tag
 )
 from api.serializers import (
+    BaseRecipeSerializer,
     DownloadShoppingCartSerializer,
     IngredientSerializer,
     RecipeCreateSerializer,
@@ -140,3 +142,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
         writer.writerows(rows)
 
         return response
+
+    @action(detail=True, methods=['POST', 'DEL'], url_path='favorite')
+    def change_favorite(self, request, pk):
+        author = request.user
+        recipe = get_object_or_404(Recipe, id=pk)
+        if request.method == 'POST':
+            RecipeFavorite.objects.create(
+                author=author, recipe=recipe
+            )
+            serializer = BaseRecipeSerializer(recipe)
+            return response.Response(
+                serializer.data, status=status.HTTP_201_CREATED
+            )
+        favorite = RecipeFavorite.objects.filter(
+            author=author, recipe=recipe
+        )
+        if not favorite.exists():
+            return response.Response(
+                {'errors': 'У вас нет данного рецепта в избранном.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        favorite.delete()
+        return response.Response(status=status.HTTP_204_NO_CONTENT)

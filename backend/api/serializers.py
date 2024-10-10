@@ -204,3 +204,8 @@ class DownloadShoppingCartSerializer(serializers.ModelSerializer):
             total_amount=Sum('amount')
         ).order_by('ingredient__name')
         return ingredients
+
+
+class RecipeFavoriteSerializer(serializers.ModelSerializer):
+    # TODO: Доработать
+    pass

@@ -143,10 +143,32 @@ class ShoppingCart(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=('author', 'recipe'),
-                name='unique_author_recipe'
+                name='unique_shopping_cart'
             )
         ]
         db_table = 'cookbook_shopping_cart'
         default_related_name = 'shopping_cart'
         verbose_name = 'Ингредиент с рецепта для покупок'
         verbose_name_plural = 'Ингредиенты с рецепта для покупок'
+
+
+class RecipeFavorite(models.Model):
+    author = models.ForeignKey(
+        to=User, verbose_name='Владелец корзины покупок',
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('author', 'recipe'),
+                name='unique_recipe_favorite'
+            )
+        ]
+        db_table = 'cookbook_recipe_favorite'
+        default_related_name = 'recipe_favorite'
+        verbose_name = 'Избранный рецепт'
+        verbose_name_plural = 'Избранные рецепты'
