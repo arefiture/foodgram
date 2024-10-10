@@ -128,3 +128,25 @@ class RecipeIngredients(models.Model):
         default_related_name = 'recipe_ingredients'
         verbose_name = 'Ингредиент рецепта'
         verbose_name_plural = 'Ингредиенты рецептов'
+
+
+class ShoppingCart(models.Model):
+    author = models.ForeignKey(
+        to=User, verbose_name='Владелец корзины покупок',
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('author', 'recipe'),
+                name='unique_author_recipe'
+            )
+        ]
+        db_table = 'cookbook_shopping_cart'
+        default_related_name = 'shopping_cart'
+        verbose_name = 'Ингредиент с рецепта для покупок'
+        verbose_name_plural = 'Ингредиенты с рецепта для покупок'

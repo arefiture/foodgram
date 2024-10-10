@@ -87,6 +87,7 @@ class UserViewSet(djoser_views.UserViewSet):
         subscription = Subscription.objects.filter(
             followed=author, follower=user
         )
+        # TODO: Возможно, стоит вынести проверку на уровень выше (сериалайзер)
         if not subscription.exists():
             return response.Response(
                 {'errors': 'У вас нет данного пользователя в подписчиках.'},

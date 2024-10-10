@@ -1,5 +1,10 @@
+import csv
+from datetime import datetime
+
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
+from rest_framework import response, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (
     AllowAny,
@@ -8,16 +13,23 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 
 from api.filters import RecipeFilter
-from api.models import Ingredient, Recipe, Tag
+from api.models import (
+    Ingredient,
+    Recipe,
+    ShoppingCart,
+    Tag
+)
 from api.serializers import (
+    DownloadShoppingCartSerializer,
     IngredientSerializer,
     RecipeCreateSerializer,
+    ShoppingCartSerializer,
     TagSerializer
 )
 from users.permissions import (
     IsAuthor,
     ReadOnly
-) 
+)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -73,3 +85,58 @@ class RecipeViewSet(viewsets.ModelViewSet):
             {'short-link': f'{domain}/s/{recipe.short_link}'},
             status=status.HTTP_200_OK
         )
+
+    @action(detail=True, methods=['POST', 'DEL'], url_path='shopping_cart')
+    def change_shopping_cart(self, request, pk):
+        author = request.user
+        recipe = get_object_or_404(Recipe, id=pk)
+        serializer = ShoppingCartSerializer(
+            data={'author': author.id, 'recipe': recipe.id}
+        )
+        if request.method == 'POST':
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return response.Response(
+                serializer.data, status=status.HTTP_201_CREATED
+            )
+        shopping_cart = ShoppingCart.objects.filter(
+            author=author, recipe=recipe
+        )
+        if not shopping_cart.exists():
+            return response.Response(
+                {'errors': 'У вас нет данного рецепта в корзине.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        shopping_cart.delete()
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['GET'], url_path='download_shopping_cart')
+    def download_shopping_cart(self, request):
+        serializer = DownloadShoppingCartSerializer(
+            instance=ShoppingCart.objects.all(),
+            many=True, context={'request': request}
+        )
+
+        now = datetime.now()
+        formatted_time = now.strftime('%d-%m-%Y_%H_%M_%S')
+
+        response = HttpResponse(content_type='text/csv')
+        filename = f'shopping_cart.csv_{request.user.id}_{formatted_time}'
+        response['Content-Disposition'] = (
+            f'attachment; filename="{filename}"'
+        )
+
+        writer = csv.writer(response)
+        writer.writerow(['Ингредиент', 'Единица измерения', 'Количество'])
+        ingredients = serializer.data[0]['ingredients']
+
+        rows = map(
+            lambda ingredient: [
+                ingredient['name'],
+                ingredient['measurement_unit'],
+                ingredient['total_amount']
+            ], ingredients
+        )
+        writer.writerows(rows)
+
+        return response

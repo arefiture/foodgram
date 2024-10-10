@@ -1,9 +1,12 @@
+from django.db.models import F, Sum
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from api.models import (
     Ingredient,
     Recipe,
     RecipeIngredients,
+    ShoppingCart,
     Tag
 )
 from core.serializers import Base64ImageField
@@ -46,6 +49,14 @@ class RecipeIngredientsGetSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
+class BaseRecipeSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
 class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(
@@ -67,6 +78,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, attrs):
+        # TODO: подумать об общем валидаторе и избавлении от повторов
         ingredients = attrs.get('recipe_ingredients')
         tags = attrs.get('tags')
         if not ingredients:
@@ -147,3 +159,48 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def get_is_in_shopping_cart(self, obj):
         return True
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    author = UserSerializer
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all()
+    )
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('author', 'recipe')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingCart.objects.all(),
+                fields=('author', 'recipe'),
+                message='Нельзя повторно добавить рецепт в корзину'
+            )
+        ]
+
+    def to_representation(self, instance):
+        shopping_cart = super().to_representation(instance)
+        shopping_cart = BaseRecipeSerializer(
+            instance.recipe
+        ).data
+        return shopping_cart
+
+
+class DownloadShoppingCartSerializer(serializers.ModelSerializer):
+    ingredients = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('ingredients',)
+
+    def get_ingredients(self, obj):
+        author = self.context.get('request').user
+        ingredients = RecipeIngredients.objects.filter(
+            recipe__shopping_cart__author=author
+        ).values(
+            name=F('ingredient__name'),
+            measurement_unit=F('ingredient__measurement_unit')
+        ).annotate(
+            total_amount=Sum('amount')
+        ).order_by('ingredient__name')
+        return ingredients
