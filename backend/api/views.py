@@ -28,7 +28,7 @@ from api.serializers import (
     ShoppingCartSerializer,
     TagSerializer
 )
-from users.permissions import (
+from core.permissions import (
     IsAuthor,
     ReadOnly
 )

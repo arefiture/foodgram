@@ -156,6 +156,12 @@ DJOSER = {
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
-        'user': ['users.permissions.CurrentUserOrAdminOrReadOnly'],
+        'user': ['core.permissions.CurrentUserOrAdminOrReadOnly'],
     }
 }
+
+RECIPES_LIMIT_MAX = 10
+# Константы FIELD_LENGTH хотел сделать в словарь.
+# Но... их получение бы было через .get и я не определился, нужно ли default =(
+NORMAL_FIELD_LENGTH = 150
+SHORT_FIELD_LENGTH = 32

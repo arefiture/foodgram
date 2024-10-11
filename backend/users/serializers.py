@@ -1,9 +1,12 @@
+from django.conf import settings
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from api.models import Recipe
-from core.serializers import Base64ImageField
+from core.serializers import (
+    Base64ImageField,
+    BaseRecipeSerializer
+)
 from users.models import Subscription, User
 from users.validators import SubscribeUniqueValidator
 
@@ -36,32 +39,24 @@ class CurrentUserSerializer(DjoserUserSerializer):
 class UserSerializer(CurrentUserSerializer):
     """Общий сериалайзер пользователя."""
     def get_is_subscribed(self, obj):
-        request = self.context['request']
-        try:
-            Subscription.objects.get(
-                follower_id=request.user.id,
-                followed_id=obj.id
-            )
-            return True
-        except Subscription.DoesNotExist:
-            return False
-
-
-class RecipeShortSerializer(serializers.ModelSerializer):
-    """Рецепты для отображения у фолловеров."""
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
+        request = self.context.get('request')
+        return Subscription.objects.filter(
+            follower_id=request.user.id,
+            followed_id=obj.id
+        ).exists()
 
 
 class SubscriptionGetSerializer(serializers.ModelSerializer):
     """Сериалайзер для фолловеров. Только для чтения."""
     is_subscribed = serializers.SerializerMethodField(
-        method_name='get_is_subscribed')
-    recipes = serializers.SerializerMethodField(method_name='get_recipes')
-    recipes_count = serializers.SerializerMethodField(
-        method_name='get_recipes_count')
+        method_name='get_is_subscribed'
+    )
+    recipes = serializers.SerializerMethodField(
+        method_name='get_recipes'
+    )
+    recipes_count = serializers.IntegerField(
+        source='recipes.count'
+    )
 
     class Meta:
         model = User
@@ -80,18 +75,15 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
         ).exists()
 
     def get_recipes(self, obj):
-        try:
-            request = self.context.get('request')
-            recipes_limit = request.GET.get('recipes_limit')
-        except AttributeError:
-            recipes_limit = 10  # TODO: вынести в настройки
+        request = self.context.get('request')
+        recipes_limit = (
+            request.GET.get('recipes_limit') if request
+            else settings.RECIPES_LIMIT_MAX
+        )
         queryset = obj.recipes.all()
         if recipes_limit:
             queryset = queryset[:int(recipes_limit)]
-        return RecipeShortSerializer(queryset, many=True).data
-
-    def get_recipes_count(self, obj):
-        return obj.recipes.all().count()
+        return BaseRecipeSerializer(queryset, many=True).data
 
 
 class SubscriptionChangedSerializer(serializers.ModelSerializer):
@@ -113,10 +105,20 @@ class SubscriptionChangedSerializer(serializers.ModelSerializer):
             )
         ]
 
+    def validate_subscription_exists(self):
+        user = self.context.get('request').user
+        author = self.validated_data.get('followed')
+
+        subscription = Subscription.objects.filter(
+            followed=author, follower=user
+        )
+        if not subscription.exists():
+            raise serializers.ValidationError(
+                'У вас нет данного пользователя в подписчиках.'
+            )
+
     def to_representation(self, instance):
-        subscription = super().to_representation(instance)
-        subscription = SubscriptionGetSerializer(
+        return SubscriptionGetSerializer(
             instance.follower,
             context={'request': self.context.get('request')}
         ).data
-        return subscription

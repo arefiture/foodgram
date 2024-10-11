@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
 
@@ -26,17 +27,17 @@ class User(AbstractUser):
         error_messages={
             'unique': 'Пользователь с таким ником уже существует.',
         },
-        max_length=150
+        max_length=settings.NORMAL_FIELD_LENGTH
     )
 
     first_name = models.CharField(
         verbose_name='Имя',
-        max_length=150
+        max_length=settings.NORMAL_FIELD_LENGTH
     )
 
     last_name = models.CharField(
         verbose_name='Фамилия',
-        max_length=150
+        max_length=settings.NORMAL_FIELD_LENGTH
     )
 
     avatar = models.ImageField(

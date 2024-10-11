@@ -10,7 +10,10 @@ from api.models import (
     ShoppingCart,
     Tag
 )
-from core.serializers import Base64ImageField
+from core.serializers import (
+    Base64ImageField,
+    BaseRecipeSerializer
+)
 from users.serializers import UserSerializer
 
 
@@ -48,14 +51,6 @@ class RecipeIngredientsGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredients
         fields = ('id', 'name', 'measurement_unit', 'amount')
-
-
-class BaseRecipeSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
@@ -129,7 +124,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         instance.text = validated_data.get('text', instance.text)
         instance.cooking_time = validated_data.get(
             'cooking_time', instance.cooking_time)
-        existing_ingredients = set(
+        existing_ingredients = set(  # TODO возможно, тут нужно поправить
             RecipeIngredients.objects.values_list('ingredient', flat=True)
         )
         for ingredient in ingredients:
