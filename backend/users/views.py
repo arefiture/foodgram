@@ -5,6 +5,7 @@ from rest_framework import status, response
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 
+from core.utils import object_update_or_delete
 from users.models import Subscription, User
 from users.serializers import (
     AvatarSerializer,
@@ -71,30 +72,15 @@ class UserViewSet(djoser_views.UserViewSet):
 
     @action(detail=True, methods=('POST', 'DELETE'), url_path='subscribe')
     def subscribe(self, request, id):
-        user = request.user
-        author = get_object_or_404(User, id=id)
+        data = {
+            'followed': request.user,
+            'follower': get_object_or_404(User, id=id)
+        }
 
-        serializer = SubscriptionChangedSerializer(
-            data={'followed': author.id, 'follower': user.id},
-            context={'request': request}
+        return object_update_or_delete(
+            serializer_class=SubscriptionChangedSerializer,
+            data=data,
+            request=request,
+            model=Subscription,
+            error_mesage='У вас нет данного пользователя в подписчиках.'
         )
-
-        if request.method == 'POST':
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return response.Response(
-                serializer.data, status=status.HTTP_201_CREATED
-            )
-
-        subscription = Subscription.objects.filter(
-            followed=author, follower=user
-        )
-
-        # TODO: Возможно, стоит вынести проверку на уровень выше (сериалайзер)
-        if not subscription.exists():
-            return response.Response(
-                {'errors': 'У вас нет данного пользователя в подписчиках.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        subscription.delete()
-        return response.Response(status=status.HTTP_204_NO_CONTENT)

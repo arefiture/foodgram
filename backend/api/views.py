@@ -4,7 +4,7 @@ from datetime import datetime
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import response, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (
     AllowAny,
@@ -32,6 +32,7 @@ from core.permissions import (
     IsAuthor,
     ReadOnly
 )
+from core.utils import object_update_or_delete
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -53,6 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [ReadOnly]
     filter_backends = [DjangoFilterBackend,]
     filterset_class = RecipeFilter
+    serializer_class = RecipeCreateSerializer
 
     def get_permissions(self):
         if self.request.method in ("GET", "POST"):
@@ -64,11 +66,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.is_valid(raise_exception=True)
         serializer.save(author=self.request.user)
-
-    def get_serializer_class(self):
-        # if self.request.method in SAFE_METHODS:
-        #     return RecipeGetSerializer
-        return RecipeCreateSerializer
 
     @action(detail=True, methods=['GET'], url_path='get-link')
     def get_short_link(self, request, pk):
@@ -90,27 +87,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['POST', 'DELETE'], url_path='shopping_cart')
     def change_shopping_cart(self, request, pk):
-        author = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-        serializer = ShoppingCartSerializer(
-            data={'author': author.id, 'recipe': recipe.id}
+        data = {
+            'author': request.user,
+            'recipe': get_object_or_404(Recipe, id=pk)
+        }
+        return object_update_or_delete(
+            data=data,
+            error_mesage='У вас нет данного рецепта в корзине.',
+            model=ShoppingCart,
+            request=request,
+            serializer_class=ShoppingCartSerializer
         )
-        if request.method == 'POST':
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return response.Response(
-                serializer.data, status=status.HTTP_201_CREATED
-            )
-        shopping_cart = ShoppingCart.objects.filter(
-            author=author, recipe=recipe
-        )
-        if not shopping_cart.exists():
-            return response.Response(
-                {'errors': 'У вас нет данного рецепта в корзине.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        shopping_cart.delete()
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET'], url_path='download_shopping_cart')
     def download_shopping_cart(self, request):
@@ -145,24 +132,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['POST', 'DELETE'], url_path='favorite')
     def change_favorite(self, request, pk):
-        author = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-        serializer = RecipeFavoriteSerializer(
-            data={'author': author.id, 'recipe': recipe.id}
+        data = {
+            'author': request.user,
+            'recipe': get_object_or_404(Recipe, id=pk)
+        }
+        return object_update_or_delete(
+            data=data,
+            error_mesage='У вас нет данного рецепта в избранном.',
+            model=RecipeFavorite,
+            request=request,
+            serializer_class=RecipeFavoriteSerializer
         )
-        if request.method == 'POST':
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return response.Response(
-                serializer.data, status=status.HTTP_201_CREATED
-            )
-        favorite = RecipeFavorite.objects.filter(
-            author=author, recipe=recipe
-        )
-        if not favorite.exists():
-            return response.Response(
-                {'errors': 'У вас нет данного рецепта в избранном.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        favorite.delete()
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
