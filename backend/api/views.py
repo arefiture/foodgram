@@ -88,7 +88,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-    @action(detail=True, methods=['POST', 'DEL'], url_path='shopping_cart')
+    @action(detail=True, methods=['POST', 'DELETE'], url_path='shopping_cart')
     def change_shopping_cart(self, request, pk):
         author = request.user
         recipe = get_object_or_404(Recipe, id=pk)
@@ -143,7 +143,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @action(detail=True, methods=['POST', 'DEL'], url_path='favorite')
+    @action(detail=True, methods=['POST', 'DELETE'], url_path='favorite')
     def change_favorite(self, request, pk):
         author = request.user
         recipe = get_object_or_404(Recipe, id=pk)
