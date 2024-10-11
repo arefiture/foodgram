@@ -6,6 +6,7 @@ from api.models import (
     Ingredient,
     Recipe,
     RecipeIngredients,
+    RecipeFavorite,
     ShoppingCart,
     Tag
 )
@@ -119,7 +120,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        # TODO: Возможно, нужно списки ингров и теги очищать и брать из запроса?
+        # TODO: Возможно, нужно списки ингров и теги очищать и брать из запроса
         ingredients = validated_data.pop('recipe_ingredients')
         tags = validated_data.pop('tags')
         instance.tags.set(tags)
@@ -161,29 +162,40 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return True
 
 
-class ShoppingCartSerializer(serializers.ModelSerializer):
+class BaseRecipeActionSerializer(serializers.ModelSerializer):
     author = UserSerializer
     recipe = serializers.PrimaryKeyRelatedField(
         queryset=Recipe.objects.all()
     )
 
     class Meta:
-        model = ShoppingCart
+        abstract = True
+        model = None
         fields = ('author', 'recipe')
-        validators = [
+        error_message = ''
+
+    @classmethod
+    def get_validators(cls):
+        return [
             UniqueTogetherValidator(
-                queryset=ShoppingCart.objects.all(),
+                queryset=cls.Meta.model.objects.all(),
                 fields=('author', 'recipe'),
-                message='Нельзя повторно добавить рецепт в корзину'
+                message=cls.Meta.error_message
             )
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Meta.validators = self.get_validators()
+
     def to_representation(self, instance):
-        shopping_cart = super().to_representation(instance)
-        shopping_cart = BaseRecipeSerializer(
-            instance.recipe
-        ).data
-        return shopping_cart
+        return BaseRecipeSerializer(instance.recipe).data
+
+
+class ShoppingCartSerializer(BaseRecipeActionSerializer):
+    class Meta(BaseRecipeActionSerializer.Meta):
+        model = ShoppingCart
+        error_message = 'Нельзя повторно добавить рецепт в корзину'
 
 
 class DownloadShoppingCartSerializer(serializers.ModelSerializer):
@@ -206,6 +218,7 @@ class DownloadShoppingCartSerializer(serializers.ModelSerializer):
         return ingredients
 
 
-class RecipeFavoriteSerializer(serializers.ModelSerializer):
-    # TODO: Доработать
-    pass
+class RecipeFavoriteSerializer(BaseRecipeActionSerializer):
+    class Meta(BaseRecipeActionSerializer.Meta):
+        model = RecipeFavorite
+        error_message = 'Нельзя повторно добавить рецепт в избранные'

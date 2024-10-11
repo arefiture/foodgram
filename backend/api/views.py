@@ -21,10 +21,10 @@ from api.models import (
     Tag
 )
 from api.serializers import (
-    BaseRecipeSerializer,
     DownloadShoppingCartSerializer,
     IngredientSerializer,
     RecipeCreateSerializer,
+    RecipeFavoriteSerializer,
     ShoppingCartSerializer,
     TagSerializer
 )
@@ -147,11 +147,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def change_favorite(self, request, pk):
         author = request.user
         recipe = get_object_or_404(Recipe, id=pk)
+        serializer = RecipeFavoriteSerializer(
+            data={'author': author.id, 'recipe': recipe.id}
+        )
         if request.method == 'POST':
-            RecipeFavorite.objects.create(
-                author=author, recipe=recipe
-            )
-            serializer = BaseRecipeSerializer(recipe)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return response.Response(
                 serializer.data, status=status.HTTP_201_CREATED
             )
