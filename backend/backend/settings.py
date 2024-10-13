@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
 
@@ -163,5 +163,8 @@ DJOSER = {
 RECIPES_LIMIT_MAX = 10
 # Константы FIELD_LENGTH хотел сделать в словарь.
 # Но... их получение бы было через .get и я не определился, нужно ли default =(
-NORMAL_FIELD_LENGTH = 150
+SUPER_LONG_FIELD_LENGTH = 256
+LONGER_FIELD_LENGTH = 150
+LONG_FIELD_LENGTH = 128
+MEDIUM_FIELD_LENGTH = 64
 SHORT_FIELD_LENGTH = 32

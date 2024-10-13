@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -11,14 +12,15 @@ class Tag(models.Model):
     # TODO: Написать manager и management-загрузку
 
     name = models.CharField(
-        verbose_name='Наименование тега', max_length=32, unique=True
+        verbose_name='Наименование тега',
+        max_length=settings.SHORT_FIELD_LENGTH,
+        unique=True
     )
     slug = models.SlugField(
-        verbose_name='Слаг', max_length=32, unique=True
+        verbose_name='Слаг',
+        max_length=settings.SHORT_FIELD_LENGTH,
+        unique=True
     )
-
-    def __str__(self) -> str:
-        return self.name
 
     class Meta:
         db_table = 'cookbook_tag'
@@ -26,26 +28,32 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'
         ordering = ['name']
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class Ingredient(models.Model):
     # TODO: Написать manager и management-загрузку
 
     name = models.CharField(
-        verbose_name='Наименование ингредиента', max_length=128, unique=True
+        verbose_name='Наименование ингредиента',
+        max_length=settings.LONG_FIELD_LENGTH,
+        unique=True
     )
     measurement_unit = models.CharField(
-        verbose_name='Единицы измерений', max_length=64
+        verbose_name='Единицы измерений',
+        max_length=settings.MEDIUM_FIELD_LENGTH
     )
     # TODO: Возможно, стоит единицы измерений вынести в отдельную модель
-
-    def __str__(self) -> str:
-        return self.name
 
     class Meta:
         db_table = 'cookbook_ingredient'
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         ordering = ['name']
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Recipe(models.Model):
@@ -60,7 +68,8 @@ class Recipe(models.Model):
         Ingredient, through='RecipeIngredients'
     )
     name = models.CharField(
-        verbose_name='Наименование рецепта', max_length=256
+        verbose_name='Наименование рецепта',
+        max_length=settings.SUPER_LONG_FIELD_LENGTH
     )
     image = models.ImageField(
         verbose_name='Путь до картинки', blank=True, upload_to='recipe/'
@@ -81,15 +90,15 @@ class Recipe(models.Model):
         max_length=6
     )
 
-    def __str__(self) -> str:
-        return self.name
-
     class Meta:
         db_table = 'cookbook_recipe'
         default_related_name = 'recipes'
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ['name']
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class RecipeTags(models.Model):

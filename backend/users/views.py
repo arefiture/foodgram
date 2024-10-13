@@ -78,9 +78,9 @@ class UserViewSet(djoser_views.UserViewSet):
         }
 
         return object_update_or_delete(
-            serializer_class=SubscriptionChangedSerializer,
             data=data,
-            request=request,
+            error_mesage='У вас нет данного пользователя в подписчиках.',
             model=Subscription,
-            error_mesage='У вас нет данного пользователя в подписчиках.'
+            request=request,
+            serializer_class=SubscriptionChangedSerializer,
         )

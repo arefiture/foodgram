@@ -1,6 +1,9 @@
 from django.db.models import F, Sum
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import (
+    UniqueValidator,
+    UniqueTogetherValidator
+)
 
 from api.models import (
     Ingredient,
@@ -10,6 +13,7 @@ from api.models import (
     ShoppingCart,
     Tag
 )
+from api.validators import UniqueDataInManyFieldValidator
 from core.serializers import (
     Base64ImageField,
     BaseRecipeSerializer
@@ -18,6 +22,7 @@ from users.serializers import UserSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """Сериалайзер по теги."""
 
     class Meta:
         model = Tag
@@ -25,6 +30,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """Сериалайзер по ингредиенты."""
 
     class Meta:
         model = Ingredient
@@ -32,6 +38,8 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientsSetSerializer(serializers.ModelSerializer):
+    """Сериалайзер связующей рецепты+ингредиенты на запись."""
+
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
     )
@@ -42,6 +50,8 @@ class RecipeIngredientsSetSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientsGetSerializer(serializers.ModelSerializer):
+    """Сериалайзер связующей рецепты+ингредиенты на чтение."""
+
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
@@ -54,9 +64,15 @@ class RecipeIngredientsGetSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
+    """Сериалайзер для создания рецептов."""
+
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Tag.objects.all()
+        many=True, queryset=Tag.objects.all(),
+        validators=[UniqueValidator(
+            queryset=Tag.objects.all(),
+            message='Теги не должны повторяться'
+        )]
     )
     author = UserSerializer(read_only=True)
     ingredients = RecipeIngredientsSetSerializer(
@@ -72,34 +88,16 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'id', 'tags', 'author', 'ingredients', 'image', 'is_favorited',
             'is_in_shopping_cart', 'name', 'text', 'cooking_time'
         )
-
-    def validate(self, attrs):
-        # TODO: подумать об общем валидаторе и избавлении от повторов
-        ingredients = attrs.get('recipe_ingredients')
-        tags = attrs.get('tags')
-        if not ingredients:
-            raise serializers.ValidationError(
-                'Необходим хотя бы один ингредиент.'
-            )
-        if not tags:
-            raise serializers.ValidationError(
-                'Необходим хотя бы один тег.'
-            )
-
-        set_ingredients = set(
-            ingredient.get('id') for ingredient in ingredients
-        )
-        set_tags = set(tags)
-        if len(ingredients) != len(set_ingredients):
-            raise serializers.ValidationError(
-                'Ингредиенты не должны повторяться'
-            )
-        if len(tags) != len(set_tags):
-            raise serializers.ValidationError(
-                'Теги не должны повторяться.'
-            )
-
-        return attrs
+        validators = [
+            UniqueDataInManyFieldValidator(
+                field='tags', message={'tags': 'Теги не должны повторяться'}
+            ),
+            UniqueDataInManyFieldValidator(
+                field='recipe_ingredients',
+                message={'ingredients': 'Ингредиенты не должны повторяться'},
+                is_dict=True, key='id'
+            ),
+        ]
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')

@@ -27,17 +27,17 @@ class User(AbstractUser):
         error_messages={
             'unique': 'Пользователь с таким ником уже существует.',
         },
-        max_length=settings.NORMAL_FIELD_LENGTH
+        max_length=settings.LONGER_FIELD_LENGTH
     )
 
     first_name = models.CharField(
         verbose_name='Имя',
-        max_length=settings.NORMAL_FIELD_LENGTH
+        max_length=settings.LONGER_FIELD_LENGTH
     )
 
     last_name = models.CharField(
         verbose_name='Фамилия',
-        max_length=settings.NORMAL_FIELD_LENGTH
+        max_length=settings.LONGER_FIELD_LENGTH
     )
 
     avatar = models.ImageField(
