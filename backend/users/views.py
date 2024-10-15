@@ -59,8 +59,8 @@ class UserViewSet(djoser_views.UserViewSet):
 
     @action(['GET'], detail=False, url_path='subscriptions')
     def subscriptions(self, request):
-        user = request.user
-        queryset = User.objects.filter(followings__follower=user)
+        follower = request.user
+        queryset = User.objects.filter(followings__follower=follower)
         pages = self.paginate_queryset(queryset)
 
         serializer = SubscriptionGetSerializer(
@@ -73,8 +73,8 @@ class UserViewSet(djoser_views.UserViewSet):
     @action(detail=True, methods=('POST', 'DELETE'), url_path='subscribe')
     def subscribe(self, request, id):
         data = {
-            'followed': request.user,
-            'follower': get_object_or_404(User, id=id)
+            'follower': request.user,
+            'followed': get_object_or_404(User, id=id)
         }
 
         return object_update_or_delete(

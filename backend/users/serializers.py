@@ -106,11 +106,11 @@ class SubscriptionChangedSerializer(serializers.ModelSerializer):
         ]
 
     def validate_subscription_exists(self):
-        user = self.context.get('request').user
-        author = self.validated_data.get('followed')
+        follower = self.context.get('request').user
+        followed = self.validated_data.get('followed')
 
         subscription = Subscription.objects.filter(
-            followed=author, follower=user
+            followed=followed, follower=follower
         )
         if not subscription.exists():
             raise serializers.ValidationError(
