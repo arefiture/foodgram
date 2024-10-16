@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -11,6 +11,7 @@ from rest_framework.permissions import (
     IsAuthenticated
 )
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from api.filters import RecipeFilter
 from api.models import (
@@ -92,7 +93,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(
             {'short-link': f'{domain}/s/{recipe.short_link}'},
             status=status.HTTP_200_OK
-        )  # TODO: Обратный редирект
+        )
 
     @action(detail=True, methods=['POST', 'DELETE'], url_path='shopping_cart')
     def change_shopping_cart(self, request, pk):
@@ -152,3 +153,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             request=request,
             serializer_class=RecipeFavoriteSerializer
         )
+
+
+class RecipeRedirectView(APIView):
+    permission_classes = [ReadOnly]
+
+    def get(self, request, short_link):
+        recipe = get_object_or_404(Recipe, short_link=short_link)
+        return redirect(recipe.get_absolute_url())

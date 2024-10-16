@@ -100,6 +100,9 @@ class Recipe(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    def get_absolute_url(self) -> str:
+        return f'/api/recipes/{self.pk}/'
+
 
 class RecipeTags(models.Model):
     recipe = models.ForeignKey(
