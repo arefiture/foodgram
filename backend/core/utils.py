@@ -1,10 +1,16 @@
+from collections import OrderedDict
 from uuid import uuid4
 
 from django.db import models
 from rest_framework import serializers, status, request, response
 
+from core.constants import (
+    TEMPLATE_MESSAGE_MINIMUM_ONE_ERROR,
+    TEMPLATE_MESSAGE_UNIQUE_ERROR
+)
 
-def generate_short_link():
+
+def generate_short_link() -> str:
     return uuid4().hex[:6]
 
 
@@ -47,3 +53,35 @@ def object_update_or_delete(
         )
     instance.delete()
     return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def many_unique_with_minimum_one_validate(
+    data_list: list, field_name: str, singular: str, plural: str
+) -> None:
+    """
+    Валидация many-полей на их наличие и уникальность.
+
+    Функция может работать как с [model.objects], так и с [OrderedDict()].
+    * data_list - валидируемые данные (список, т.к. many=True)
+    * field_name - наименование поля валидации для его указания в ошибке
+    * singular - наименование в единственном числе на русском
+    * plural - наименование во множественном числе на русском
+    """
+    if not data_list:
+        raise serializers.ValidationError({
+            field_name: TEMPLATE_MESSAGE_MINIMUM_ONE_ERROR.format(
+                field_name=singular.lower()
+            )
+        })
+
+    if isinstance(data_list[0], OrderedDict):
+        data_set = {data.get('id') for data in data_list}
+    else:
+        data_set = {data.id for data in data_list}
+
+    if len(data_list) != len(data_set):
+        raise serializers.ValidationError({
+            field_name: TEMPLATE_MESSAGE_UNIQUE_ERROR.format(
+                field_name=plural.capitalize()
+            )
+        })

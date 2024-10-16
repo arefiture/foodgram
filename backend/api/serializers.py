@@ -4,7 +4,6 @@ from rest_framework.validators import (
     UniqueTogetherValidator
 )
 
-from api.decorators import unique_with_minimum_one
 from api.models import (
     Ingredient,
     Recipe,
@@ -13,13 +12,11 @@ from api.models import (
     ShoppingCart,
     Tag
 )
-from core.constants import (
-    TEMPLATE_MESSAGE_MINIMUM_ONE_ERROR,
-)
 from core.serializers import (
     Base64ImageField,
     BaseRecipeSerializer
 )
+from core.utils import many_unique_with_minimum_one_validate
 from users.serializers import UserSerializer
 
 
@@ -88,19 +85,27 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'is_in_shopping_cart', 'name', 'text', 'cooking_time'
         )
 
-    @unique_with_minimum_one(
-        singular='тег', plural='Теги'
-    )
-    def validate_tags(self, value_list):
-        value_set = {field for field in value_list}
-        return value_set
+    """
+    Сообщение ревьюверу:
+    Я пробовал делать через validate_<field>, но столкнулся с проблемой -
+    мне приходилось делать дополнительные проверки внутри update-метода.
+    https://gist.github.com/arefiture/bb78eac18e495ab6b8cec3db41c7d771
+    Мне такой подход не понравился
+    """
+    def validate(self, data):
+        ingredients = data.get('recipe_ingredients')
+        many_unique_with_minimum_one_validate(
+            data_list=ingredients, field_name='ingredients',
+            singular='ингредиент', plural='ингредиенты'
+        )
 
-    @unique_with_minimum_one(
-        singular='ингредиент', plural='Ингредиенты'
-    )
-    def validate_ingredients(self, value_list):
-        value_set = {field.get('id') for field in value_list}
-        return value_set
+        tags = data.get('tags')
+        many_unique_with_minimum_one_validate(
+            data_list=tags, field_name='tags',
+            singular='тег', plural='теги'
+        )
+
+        return data
 
     def added_tags_ingredients(self, *, ingredients, recipe, tags):
         recipe.tags.set(tags)
@@ -114,8 +119,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         RecipeIngredients.objects.bulk_create(ingredient_recipe)
 
     def create(self, validated_data: dict):
-        tags = validated_data.pop('tags')
         ingredients = validated_data.pop('recipe_ingredients')
+        tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
         self.added_tags_ingredients(
             ingredients=ingredients, recipe=recipe, tags=tags
@@ -123,20 +128,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        ingredients = validated_data.pop('recipe_ingredients', None)
-        if not ingredients:
-            raise serializers.ValidationError({
-                'ingredients': TEMPLATE_MESSAGE_MINIMUM_ONE_ERROR.format(
-                    field_name='ингредиент'
-                )
-            })
-        tags = validated_data.pop('tags', None)
-        if not tags:
-            raise serializers.ValidationError({
-                'tags': TEMPLATE_MESSAGE_MINIMUM_ONE_ERROR.format(
-                    field_name='тег'
-                )
-            })
+        ingredients = validated_data.pop('recipe_ingredients')
+        tags = validated_data.pop('tags')
         super().update(instance, validated_data)
         instance.recipe_ingredients.all().delete()
         self.added_tags_ingredients(

@@ -67,6 +67,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(author=self.request.user)
 
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = request.data.copy()
+
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        super().perform_update(serializer)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['GET'], url_path='get-link')
     def get_short_link(self, request, pk):
         try:
@@ -83,7 +92,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(
             {'short-link': f'{domain}/s/{recipe.short_link}'},
             status=status.HTTP_200_OK
-        )
+        )  # TODO: Обратный редирект
 
     @action(detail=True, methods=['POST', 'DELETE'], url_path='shopping_cart')
     def change_shopping_cart(self, request, pk):
