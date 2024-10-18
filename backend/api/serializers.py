@@ -62,16 +62,31 @@ class RecipeIngredientsGetSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-class RecipeCreateSerializer(serializers.ModelSerializer):
-    """Сериалайзер для создания рецептов."""
+class AbstractRecipeSerializer(BaseRecipeSerializer):
+    """Абстрактный сериалайзер рецептов.
 
-    image = Base64ImageField()
-    tags = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Tag.objects.all(),
-        required=True
+    Содержит дополнительные поля для базового сериалайзера рецептов:
+    теги, ингредиенты, автор и описание.
+    """
+    tags = TagSerializer(many=True)
+    author = UserSerializer()
+    ingredients = RecipeIngredientsGetSerializer(
+        many=True,
+        source='recipe_ingredients',
     )
-    author = UserSerializer(read_only=True)
-    ingredients = RecipeIngredientsSetSerializer(
+
+    class Meta(BaseRecipeSerializer.Meta):
+        abstract = True
+        fields = (
+            *BaseRecipeSerializer.Meta.fields,
+            'tags', 'ingredients', 'author', 'text'
+        )
+
+
+class RecipeGetSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(many=True)
+    author = UserSerializer()
+    ingredients = RecipeIngredientsGetSerializer(
         many=True,
         source='recipe_ingredients',
     )
@@ -84,6 +99,46 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'id', 'tags', 'author', 'ingredients', 'image', 'is_favorited',
             'is_in_shopping_cart', 'name', 'text', 'cooking_time'
         )
+        read_only_fields = fields
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        return RecipeFavorite.objects.filter(
+            author=request.user, recipe=obj
+        ).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        return ShoppingCart.objects.filter(
+            author=request.user, recipe=obj
+        ).exists()
+
+
+class RecipeChangeSerializer(serializers.ModelSerializer):
+    """Сериалайзер для создания рецептов."""
+
+    image = Base64ImageField()
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Tag.objects.all(),
+        required=True
+    )
+    author = UserSerializer(default=serializers.CurrentUserDefault())
+    ingredients = RecipeIngredientsSetSerializer(
+        many=True,
+        source='recipe_ingredients',
+    )
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id', 'tags', 'author', 'ingredients', 'image', 'name',
+            'text', 'cooking_time'
+        )
+        read_only_fields = ('author', )
 
     """
     Сообщение ревьюверу:
@@ -138,20 +193,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        recipe = super().to_representation(instance)
-        recipe['tags'] = TagSerializer(
-            instance.tags.all(), many=True
+        return RecipeGetSerializer(
+            instance, context=self.context
         ).data
-        recipe['ingredients'] = RecipeIngredientsGetSerializer(
-            instance.recipe_ingredients.all(), many=True
-        ).data
-        return recipe
-
-    def get_is_favorited(self, obj):
-        return True
-
-    def get_is_in_shopping_cart(self, obj):
-        return True
 
 
 class BaseRecipeActionSerializer(serializers.ModelSerializer):

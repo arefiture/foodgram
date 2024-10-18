@@ -24,8 +24,9 @@ from api.models import (
 from api.serializers import (
     DownloadShoppingCartSerializer,
     IngredientSerializer,
-    RecipeCreateSerializer,
+    RecipeChangeSerializer,
     RecipeFavoriteSerializer,
+    RecipeGetSerializer,
     ShoppingCartSerializer,
     TagSerializer
 )
@@ -55,7 +56,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [ReadOnly]
     filter_backends = [DjangoFilterBackend,]
     filterset_class = RecipeFilter
-    serializer_class = RecipeCreateSerializer
+    serializer_class = RecipeChangeSerializer
 
     def get_permissions(self):
         if self.request.method in ("GET", "POST"):
@@ -63,6 +64,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         elif self.request.method in ("PATCH", "DELETE"):
             self.permission_classes = [IsAuthor]
         return super().get_permissions()
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return RecipeGetSerializer
+        elif self.action in ['create', 'update', 'partial_update']:
+            return RecipeChangeSerializer
+        return super().get_serializer_class()
 
     def perform_create(self, serializer):
         serializer.is_valid(raise_exception=True)
