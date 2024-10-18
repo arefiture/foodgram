@@ -12,8 +12,11 @@ from api.models import (
     ShoppingCart,
     Tag
 )
+from core.constants import (
+    REPEAT_ADDED_FAVORITE_ERROR,
+    REPEAT_ADDED_SHOPPING_CART_ERROR
+)
 from core.serializers import (
-    Base64ImageField,
     BaseRecipeSerializer
 )
 from core.utils import many_unique_with_minimum_one_validate
@@ -83,45 +86,35 @@ class AbstractRecipeSerializer(BaseRecipeSerializer):
         )
 
 
-class RecipeGetSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True)
-    author = UserSerializer()
-    ingredients = RecipeIngredientsGetSerializer(
-        many=True,
-        source='recipe_ingredients',
-    )
+class RecipeGetSerializer(AbstractRecipeSerializer):
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Recipe
+    class Meta(AbstractRecipeSerializer.Meta):
         fields = (
-            'id', 'tags', 'author', 'ingredients', 'image', 'is_favorited',
-            'is_in_shopping_cart', 'name', 'text', 'cooking_time'
+            *AbstractRecipeSerializer.Meta.fields,
+            'is_favorited', 'is_in_shopping_cart'
         )
         read_only_fields = fields
 
-    def get_is_favorited(self, obj):
+    def get_is_exists(self, obj, model):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
-        return RecipeFavorite.objects.filter(
+        return model.objects.filter(
             author=request.user, recipe=obj
         ).exists()
+
+    def get_is_favorited(self, obj):
+        return self.get_is_exists(obj, RecipeFavorite)
 
     def get_is_in_shopping_cart(self, obj):
-        request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
-        return ShoppingCart.objects.filter(
-            author=request.user, recipe=obj
-        ).exists()
+        return self.get_is_exists(obj, ShoppingCart)
 
 
-class RecipeChangeSerializer(serializers.ModelSerializer):
+class RecipeChangeSerializer(AbstractRecipeSerializer):
     """Сериалайзер для создания рецептов."""
 
-    image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Tag.objects.all(),
         required=True
@@ -132,12 +125,7 @@ class RecipeChangeSerializer(serializers.ModelSerializer):
         source='recipe_ingredients',
     )
 
-    class Meta:
-        model = Recipe
-        fields = (
-            'id', 'tags', 'author', 'ingredients', 'image', 'name',
-            'text', 'cooking_time'
-        )
+    class Meta(AbstractRecipeSerializer.Meta):
         read_only_fields = ('author', )
 
     """
@@ -231,7 +219,7 @@ class BaseRecipeActionSerializer(serializers.ModelSerializer):
 class ShoppingCartSerializer(BaseRecipeActionSerializer):
     class Meta(BaseRecipeActionSerializer.Meta):
         model = ShoppingCart
-        error_message = 'Нельзя повторно добавить рецепт в корзину'
+        error_message = REPEAT_ADDED_SHOPPING_CART_ERROR
 
 
 class DownloadShoppingCartSerializer(serializers.ModelSerializer):
@@ -243,6 +231,7 @@ class DownloadShoppingCartSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, obj):
         author = self.context.get('request').user
+        # TODO: фильтр ниже вынести в менеджен
         ingredients = RecipeIngredients.objects.filter(
             recipe__shopping_cart__author=author
         ).values(
@@ -257,4 +246,4 @@ class DownloadShoppingCartSerializer(serializers.ModelSerializer):
 class RecipeFavoriteSerializer(BaseRecipeActionSerializer):
     class Meta(BaseRecipeActionSerializer.Meta):
         model = RecipeFavorite
-        error_message = 'Нельзя повторно добавить рецепт в избранные'
+        error_message = REPEAT_ADDED_FAVORITE_ERROR
