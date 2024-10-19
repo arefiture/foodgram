@@ -1,17 +1,19 @@
 from collections import OrderedDict
+from re import sub as re_sub
 from uuid import uuid4
 
 from django.db import models
 from rest_framework import serializers, status, request, response
 
 from core.constants import (
+    MAX_LENGTH_SHORT_LINK,
     TEMPLATE_MESSAGE_MINIMUM_ONE_ERROR,
     TEMPLATE_MESSAGE_UNIQUE_ERROR
 )
 
 
 def generate_short_link() -> str:
-    return uuid4().hex[:6]
+    return uuid4().hex[:MAX_LENGTH_SHORT_LINK]
 
 
 def object_update_or_delete(
@@ -85,3 +87,13 @@ def many_unique_with_minimum_one_validate(
                 field_name=plural.capitalize()
             )
         })
+
+
+def to_snake_case(text: str) -> str:
+    """Преобразовывает CamelCase в snake_case.
+
+    Добавляет нижнее подчеркивание перед заглавными буквами, кроме первой
+    буквы строки. После этого превращает все буквы в строчные и
+    возвращает строку.
+    """
+    return re_sub(r'(?<!^)(?=[A-Z])', '_', text).lower()
