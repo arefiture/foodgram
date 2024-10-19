@@ -18,7 +18,7 @@ class Tag(CookbookModel):
         unique=True
     )
 
-    class Meta:
+    class Meta(CookbookModel.Meta):
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
         ordering = ['name']

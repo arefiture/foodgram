@@ -15,7 +15,7 @@ class RecipeFavorite(CookbookModel):
         to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
     )
 
-    class Meta:
+    class Meta(CookbookModel.Meta):
         constraints = [
             models.UniqueConstraint(
                 fields=('author', 'recipe'),

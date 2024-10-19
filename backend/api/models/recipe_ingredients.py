@@ -26,7 +26,7 @@ class RecipeIngredients(CookbookModel):
         ]
     )
 
-    class Meta:
+    class Meta(CookbookModel.Meta):
         default_related_name = 'recipe_ingredients'
         verbose_name = 'Ингредиент рецепта'
         verbose_name_plural = 'Ингредиенты рецептов'

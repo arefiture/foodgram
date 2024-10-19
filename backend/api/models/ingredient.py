@@ -18,7 +18,7 @@ class Ingredient(CookbookModel):
     )
     # TODO: Возможно, стоит единицы измерений вынести в отдельную модель
 
-    class Meta:
+    class Meta(CookbookModel.Meta):
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         ordering = ['name']

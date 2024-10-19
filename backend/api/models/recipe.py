@@ -52,7 +52,7 @@ class Recipe(CookbookModel):
         max_length=MAX_LENGTH_SHORT_LINK
     )
 
-    class Meta:
+    class Meta(CookbookModel.Meta):
         default_related_name = 'recipes'
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'

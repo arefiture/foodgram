@@ -13,7 +13,7 @@ class RecipeTags(CookbookModel):
         to=Tag, verbose_name='Тег', on_delete=models.CASCADE
     )
 
-    class Meta:
+    class Meta(CookbookModel.Meta):
         default_related_name = 'recipe_tags'
         verbose_name = 'Тег рецепта'
         verbose_name_plural = 'Теги рецептов'

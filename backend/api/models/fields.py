@@ -1,10 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.db.models import CASCADE, ForeignKey
+from django.db import models
 
 User = get_user_model()
 
 
-class UserForeignKey(ForeignKey):
+class UserForeignKey(models.ForeignKey):
     """
     FK-поле для пользователей.
 
@@ -12,10 +12,7 @@ class UserForeignKey(ForeignKey):
     - to=User (модель берётся из get_user_model)
     - on_delete=CASCADE
     """
-    def __init__(self, verbose_name, **kwargs):
-        return super().__init__(
-            to=User,
-            verbose_name=verbose_name,
-            on_delete=CASCADE,
-            *kwargs
-        )
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('on_delete', models.CASCADE)
+        kwargs.setdefault('to', User)
+        return super().__init__(*args, **kwargs)
