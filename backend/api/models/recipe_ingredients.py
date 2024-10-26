@@ -10,6 +10,33 @@ from core.constants import (
 )
 
 
+class RecipeIngredientsQuerySet(models.QuerySet):
+
+    def get_sum_amount(self) -> "RecipeIngredientsQuerySet":
+        return self.annotate(total_amount=models.Sum('amount'))
+
+    def order_by_ingredient_name(self) -> "RecipeIngredientsQuerySet":
+        return self.order_by('ingredient__name')
+
+    def rename_fields(self) -> "RecipeIngredientsQuerySet":
+        self.values(
+            name=models.F('ingredient__name'),
+            measurement_unit=models.F('ingredient__measurement_unit')
+        )
+
+
+class ShopCartListManager(models.Manager):
+
+    def get_queryset(self, author) -> RecipeIngredientsQuerySet:
+        return (
+            RecipeIngredientsQuerySet(self.model)
+            .filter(recipe__shopping_cart__author=author)
+            .rename_fields()
+            .get_sum_amount()
+            .order_by_ingredient_name()
+        )
+
+
 class RecipeIngredients(CookbookModel):
     recipe = models.ForeignKey(
         to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
@@ -25,6 +52,9 @@ class RecipeIngredients(CookbookModel):
                 message=MIN_INGREDIENT_AMOUNT_ERROR),
         ]
     )
+
+    objects = RecipeIngredientsQuerySet.as_manager()
+    shopping_list = ShopCartListManager()
 
     class Meta(CookbookModel.Meta):
         default_related_name = 'recipe_ingredients'

@@ -15,6 +15,8 @@ MIN_COOKING_TIME_ERROR = (
 MIN_INGREDIENT_AMOUNT_ERROR = (
     f'Количество должно быть равно {INGREDIENT_AMOUNT_MIN} или больше.'
 )
+USER_EMAIL_ERROR = 'Данный электронный адрес уже используется.'
+USER_USERNAME_ERROR = 'Пользователь с таким ником уже существует.'
 
 # Названия "схем" - префикс перед названием таблицы
 COOKBOOK = 'cookbook'  # Префикс моделей приложения api
@@ -30,6 +32,7 @@ LENGTH_CHARFIELD_256 = 256
 # Адреса
 RECIPE_IMAGE_PATH = 'recipes/images/'
 RECIPE_DETAIL_URL = '/api/recipes/{pk}/'
+USER_AVATAR_PATH = 'users/'
 
 # Остальные значения
 MAX_LENGTH_SHORT_LINK = 6

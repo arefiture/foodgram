@@ -1,4 +1,3 @@
-from django.db.models import F, Sum
 from rest_framework import serializers
 from rest_framework.validators import (
     UniqueTogetherValidator
@@ -231,16 +230,7 @@ class DownloadShoppingCartSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, obj):
         author = self.context.get('request').user
-        # TODO: фильтр ниже вынести в менеджен
-        ingredients = RecipeIngredients.objects.filter(
-            recipe__shopping_cart__author=author
-        ).values(
-            name=F('ingredient__name'),
-            measurement_unit=F('ingredient__measurement_unit')
-        ).annotate(
-            total_amount=Sum('amount')
-        ).order_by('ingredient__name')
-        return ingredients
+        return RecipeIngredients.shopping_list.get_queryset(author)
 
 
 class RecipeFavoriteSerializer(BaseRecipeActionSerializer):

@@ -16,6 +16,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+# TODO не забыть про .env
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -161,10 +162,3 @@ DJOSER = {
 }
 
 RECIPES_LIMIT_MAX = 10
-# Константы FIELD_LENGTH хотел сделать в словарь.
-# Но... их получение бы было через .get и я не определился, нужно ли default =(
-SUPER_LONG_FIELD_LENGTH = 256
-LONGER_FIELD_LENGTH = 150
-LONG_FIELD_LENGTH = 128
-MEDIUM_FIELD_LENGTH = 64
-SHORT_FIELD_LENGTH = 32
