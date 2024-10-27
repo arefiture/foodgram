@@ -1,4 +1,4 @@
-from api.models.abstract_models import CookbookModel
+from api.models.abstract_models import CookbookBaseModel
 from api.models.fields import UserForeignKey
 from api.models.ingredient import Ingredient
 from api.models.recipe import Recipe

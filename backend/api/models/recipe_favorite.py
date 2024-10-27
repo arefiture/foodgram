@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from api.models.abstract_models import CookbookModel
+from api.models.abstract_models import CookbookBaseModel
 from api.models.fields import UserForeignKey
 from api.models.recipe import Recipe
 
@@ -9,13 +9,13 @@ from api.models.recipe import Recipe
 User = get_user_model()
 
 
-class RecipeFavorite(CookbookModel):
+class RecipeFavorite(CookbookBaseModel):
     author = UserForeignKey(verbose_name='Владелец корзины покупок')
     recipe = models.ForeignKey(
         to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
     )
 
-    class Meta(CookbookModel.Meta):
+    class Meta(CookbookBaseModel.Meta):
         constraints = [
             models.UniqueConstraint(
                 fields=('author', 'recipe'),

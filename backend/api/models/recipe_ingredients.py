@@ -1,7 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from api.models.abstract_models import CookbookModel
+from api.models.abstract_models import CookbookBaseModel
 from api.models.ingredient import Ingredient
 from api.models.recipe import Recipe
 from core.constants import (
@@ -19,7 +19,7 @@ class RecipeIngredientsQuerySet(models.QuerySet):
         return self.order_by('ingredient__name')
 
     def rename_fields(self) -> "RecipeIngredientsQuerySet":
-        self.values(
+        return self.values(
             name=models.F('ingredient__name'),
             measurement_unit=models.F('ingredient__measurement_unit')
         )
@@ -37,7 +37,7 @@ class ShopCartListManager(models.Manager):
         )
 
 
-class RecipeIngredients(CookbookModel):
+class RecipeIngredients(CookbookBaseModel):
     recipe = models.ForeignKey(
         to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
     )
@@ -56,7 +56,7 @@ class RecipeIngredients(CookbookModel):
     objects = RecipeIngredientsQuerySet.as_manager()
     shopping_list = ShopCartListManager()
 
-    class Meta(CookbookModel.Meta):
+    class Meta(CookbookBaseModel.Meta):
         default_related_name = 'recipe_ingredients'
         verbose_name = 'Ингредиент рецепта'
         verbose_name_plural = 'Ингредиенты рецептов'

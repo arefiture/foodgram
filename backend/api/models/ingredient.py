@@ -1,10 +1,10 @@
 from django.db import models
 
-from api.models.abstract_models import CookbookModel
+from api.models.abstract_models import CookbookBaseModel
 from core.constants import LENGTH_CHARFIELD_64, LENGTH_CHARFIELD_128
 
 
-class Ingredient(CookbookModel):
+class Ingredient(CookbookBaseModel):
     # TODO: Написать manager и management-загрузку
 
     name = models.CharField(
@@ -18,7 +18,7 @@ class Ingredient(CookbookModel):
     )
     # TODO: Возможно, стоит единицы измерений вынести в отдельную модель
 
-    class Meta(CookbookModel.Meta):
+    class Meta(CookbookBaseModel.Meta):
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         ordering = ['name']

@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from api.models.abstract_models import CookbookModel
+from api.models.abstract_models import CookbookBaseModel
 from api.models.fields import UserForeignKey
 from api.models.ingredient import Ingredient
 from api.models.tag import Tag
@@ -19,7 +19,7 @@ from core.utils import generate_short_link
 User = get_user_model()
 
 
-class Recipe(CookbookModel):
+class Recipe(CookbookBaseModel):
 
     tags = models.ManyToManyField(
         Tag, through='RecipeTags'
@@ -52,7 +52,7 @@ class Recipe(CookbookModel):
         max_length=MAX_LENGTH_SHORT_LINK
     )
 
-    class Meta(CookbookModel.Meta):
+    class Meta(CookbookBaseModel.Meta):
         default_related_name = 'recipes'
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'

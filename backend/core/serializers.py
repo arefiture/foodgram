@@ -17,24 +17,3 @@ class Base64ImageField(serializers.ImageField):
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
 
         return super().to_internal_value(data)
-
-
-# Мне не нравится этот сериалайзер в данном файле.
-# Возможно ли как-то его поместить в api.serializers.
-# И избежать связи serializer'ов api → users, users → api.
-class BaseRecipeSerializer(serializers.ModelSerializer):
-    """Базовый сериалайзер рецептов.
-
-    Содержит минимум необходимых полей для ответов на некоторые запросы.
-    В перечень полей входят:
-    - id
-    - name
-    - image
-    - cooking_time
-    """
-
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')

@@ -1,49 +1,16 @@
 from django.conf import settings
-from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from core.serializers import (
-    Base64ImageField,
-    BaseRecipeSerializer
-)
 from users.models import Subscription, User
+from users.serializers.user import UserSerializer
 from users.validators import SubscribeUniqueValidator
 
 
-class AvatarSerializer(serializers.Serializer):
-    """Сериалайзер под аватар."""
-    avatar = Base64ImageField(required=False)
-
-
-class CurrentUserSerializer(DjoserUserSerializer):
-    """Сериалайзер под текущего пользователя (для /me)."""
-    is_subscribed = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = (
-            'id',
-            'email',
-            'username',
-            'first_name',
-            'last_name',
-            'avatar',
-            'is_subscribed',
-        )
-
-    def get_is_subscribed(self, obj):
-        return False
-
-
-class UserSerializer(CurrentUserSerializer):
-    """Общий сериалайзер пользователя."""
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        return Subscription.objects.filter(
-            follower_id=request.user.id,
-            followed_id=obj.id
-        ).exists()
+def get_base_recipe_serializer():
+    """Отложенный импорт сериалайзера для избежания цикличного импорта."""
+    from api.serializers import BaseRecipeSerializer
+    return BaseRecipeSerializer
 
 
 class SubscriptionGetSerializer(serializers.ModelSerializer):
@@ -83,7 +50,8 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
         queryset = obj.recipes.all()
         if recipes_limit:
             queryset = queryset[:int(recipes_limit)]
-        return BaseRecipeSerializer(queryset, many=True).data
+        serializer = get_base_recipe_serializer()
+        return serializer(queryset, many=True).data
 
 
 class SubscriptionChangedSerializer(serializers.ModelSerializer):

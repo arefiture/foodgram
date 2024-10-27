@@ -4,7 +4,7 @@ from users.models.abstract_models import AuthBaseModel
 from users.models.user import User
 
 
-class Subscription(AuthBaseModel, models.Model):
+class Subscription(AuthBaseModel):
     followed = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='followings',
         verbose_name='Автор рецепта'
