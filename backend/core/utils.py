@@ -2,8 +2,11 @@ from collections import OrderedDict
 from re import sub as re_sub
 from uuid import uuid4
 
-from django.db import models
-from rest_framework import serializers, status, request, response
+from django.db.models import Model
+from rest_framework import status
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.serializers import Serializer, ValidationError
 
 from core.constants import (
     MAX_LENGTH_SHORT_LINK,
@@ -16,14 +19,54 @@ def generate_short_link() -> str:
     return uuid4().hex[:MAX_LENGTH_SHORT_LINK]
 
 
+def object_update(*, serializer: Serializer) -> Response:
+    """
+    Функция для обновления данных из action.
+
+    Принимает в себя:
+    * serializer - готовый объект сериалайзера.
+    """
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(
+        serializer.data, status=status.HTTP_201_CREATED
+    )
+
+
+def object_delete(
+    *,
+    data: dict[str: object],
+    error_mesage: str,
+    model: Model
+) -> Response:
+    """
+    Функция для удаления данных из action.
+
+    Принимает в себя:
+    * data - словарь данных для проверки в модели. Из данного словаря
+    также берутся данные по id для создания сериалайзера
+    * error_mesage - текст ошибки при удалении, если удаляемый элемент
+    отсутствует в БД
+    * model - модель данных
+    """
+    instance = model.objects.filter(**data)
+    if not instance.exists():
+        return Response(
+            {'errors': error_mesage},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    instance.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 def object_update_or_delete(
     *,
     data: dict[str: object],
     error_mesage: str,
-    model: models.Model,
-    request: request.Request,
-    serializer_class: serializers.Serializer
-) -> response.Response:
+    model: Model,
+    request: Request,
+    serializer_class: Serializer
+) -> Response:
     """
     Функция для обновления и удаления данных из action.
 
@@ -42,19 +85,8 @@ def object_update_or_delete(
         context={'request': request}
     )
     if request.method == 'POST':
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return response.Response(
-            serializer.data, status=status.HTTP_201_CREATED
-        )
-    instance = model.objects.filter(**data)
-    if not instance.exists():
-        return response.Response(
-            {'errors': error_mesage},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    instance.delete()
-    return response.Response(status=status.HTTP_204_NO_CONTENT)
+        return object_update(serializer=serializer)
+    return object_delete(data=data, error_mesage=error_mesage, model=model)
 
 
 def many_unique_with_minimum_one_validate(
@@ -70,7 +102,7 @@ def many_unique_with_minimum_one_validate(
     * plural - наименование во множественном числе на русском
     """
     if not data_list:
-        raise serializers.ValidationError({
+        raise ValidationError({
             field_name: TEMPLATE_MESSAGE_MINIMUM_ONE_ERROR.format(
                 field_name=singular.lower()
             )
@@ -82,7 +114,7 @@ def many_unique_with_minimum_one_validate(
         data_set = {data.id for data in data_list}
 
     if len(data_list) != len(data_set):
-        raise serializers.ValidationError({
+        raise ValidationError({
             field_name: TEMPLATE_MESSAGE_UNIQUE_ERROR.format(
                 field_name=plural.capitalize()
             )
