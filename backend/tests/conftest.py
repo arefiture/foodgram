@@ -1,41 +1,37 @@
-import pytest
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
+import os
+import sys
 
-from tests.utils import FIRST_VALID_USER
+from django.utils.version import get_version
 
-User = get_user_model()
+BASE_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
+sys.path.append(BASE_DIR)
 
+root_dir_content = os.listdir(BASE_DIR)
+PROJECT_DIR_NAME = 'backend'
 
-@pytest.fixture
-def api_client() -> APIClient:
-    return APIClient()
-
-
-@pytest.fixture
-def first_user(django_user_model):
-    return django_user_model.objects.create_user(
-        **FIRST_VALID_USER
+if (
+        PROJECT_DIR_NAME not in root_dir_content
+        or not os.path.isdir(os.path.join(BASE_DIR, PROJECT_DIR_NAME))
+):
+    assert False, (
+        f'В директории `{BASE_DIR}` не найдена папка c проектом '
+        f'`{PROJECT_DIR_NAME}`. Убедитесь, что у вас верная структура проекта.'
     )
 
+MANAGE_PATH = os.path.join(BASE_DIR, PROJECT_DIR_NAME)
+project_dir_content = os.listdir(MANAGE_PATH)
+FILENAME = 'manage.py'
 
-@pytest.fixture
-def token_first_user(first_user):
-    client = APIClient()
-    response = client.post('/api/auth/token/login/', {
-        'email': first_user.email,
-        'password': FIRST_VALID_USER['password']
-    })
-    token = response.data.get('auth_token')
-    return {
-        'auth_token': token
-    }
-
-
-@pytest.fixture
-def authorized_client_for_first_user(token_first_user):
-    client = APIClient()
-    client.credentials(
-        HTTP_AUTHORIZATION=f'Token {token_first_user["auth_token"]}'
+if FILENAME not in project_dir_content:
+    assert False, (
+        f'В директории `{MANAGE_PATH}` не найден файл `{FILENAME}`. '
+        f'Убедитесь, что у вас верная структура проекта.'
     )
-    return client
+
+assert get_version() < '4.0.0', 'Пожалуйста, используйте версию Django < 4.0.0'
+
+pytest_plugins = [
+    'tests.fixtures.fixture_user',
+]

@@ -3,16 +3,21 @@ from http import HTTPStatus
 from django.db import IntegrityError
 import pytest
 
-from tests.utils import (
+from tests.utils.users import (
     FIRST_VALID_USER,
     IN_USE_USER_DATA_FOR_REGISTER,
     INVALID_USER_DATA_FOR_LOGIN,
     INVALID_USER_DATA_FOR_REGISTER,
+    SECOND_VALID_USER,
+    THIRD_VALID_USER,
+    URL_CREATE_USER,
+    URL_LOGIN,
+    URL_LOGOUT
+)
+from tests.utils.general import (
     REQUIRED_FIELDS_ERROR,
     RESPONSE_EXPECTED_STRUCTURE,
     RESPONSE_KEY_ERROR_FIELD,
-    SECOND_VALID_USER,
-    THIRD_VALID_USER,
     URL_BAD_REQUEST_ERROR,
     URL_CREATED_ERROR,
     URL_NOT_FOUND_ERROR,
@@ -24,34 +29,31 @@ from tests.utils import (
 
 @pytest.mark.django_db(transaction=True)
 class TestUserRegistration:
-    URL_LOGIN = '/api/auth/token/login/'
-    URL_LOGOUT = '/api/auth/token/logout/'
-    URL_CREATE_USER = '/api/users/'
 
     def check_invalid_data_signup(self, response):
         assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=self.URL_LOGIN)
+            URL_NOT_FOUND_ERROR.format(url=URL_LOGIN)
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            URL_BAD_REQUEST_ERROR.format(url=self.URL_LOGIN)
+            URL_BAD_REQUEST_ERROR.format(url=URL_LOGIN)
         )
         response_json = response.json()
         assert RESPONSE_KEY_ERROR_FIELD in response_json, (
-            REQUIRED_FIELDS_ERROR.format(url=self.URL_LOGIN)
+            REQUIRED_FIELDS_ERROR.format(url=URL_LOGIN)
         )
 
     def test_nodata_signup(self, api_client):
-        response = api_client.post(self.URL_LOGIN)
+        response = api_client.post(URL_LOGIN)
         self.check_invalid_data_signup(response=response)
 
     @pytest.mark.parametrize('user_data', INVALID_USER_DATA_FOR_LOGIN)
     def test_invalid_data_signup(self, api_client, user_data):
-        response = api_client.post(self.URL_LOGIN, data=user_data)
+        response = api_client.post(URL_LOGIN, data=user_data)
         self.check_invalid_data_signup(response=response)
 
     @pytest.mark.parametrize('user_data', INVALID_USER_DATA_FOR_REGISTER)
     def test_without_data_register(self, api_client, user_data):
-        url = self.URL_CREATE_USER
+        url = URL_CREATE_USER
         response = api_client.post(url, user_data)
         assert response.status_code != HTTPStatus.NOT_FOUND, (
             URL_NOT_FOUND_ERROR.format(url=url)
@@ -73,7 +75,7 @@ class TestUserRegistration:
             )
 
     def check_create_user(self, api_client, model, data):
-        url = self.URL_CREATE_USER
+        url = URL_CREATE_USER
         user_count = model.objects.count()
         response = api_client.post(url, data=data)
         assert response.status_code == HTTPStatus.CREATED, (
@@ -95,7 +97,7 @@ class TestUserRegistration:
     ):
         self.check_create_user(api_client, django_user_model, user_data)
 
-        url = self.URL_CREATE_USER
+        url = URL_CREATE_USER
         user_count = django_user_model.objects.count()
         assert_msg = user_data.pop('assert_msg').format(url=url)
         try:
@@ -113,28 +115,28 @@ class TestUserRegistration:
     def test_signup(self, api_client, django_user_model, user_data):
         self.check_create_user(api_client, django_user_model, user_data)
 
-        response = api_client.post(self.URL_LOGIN, {
+        response = api_client.post(URL_LOGIN, {
             key: value for key, value in user_data.items()
             if key in ('email', 'password')
         })
         assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=self.URL_LOGIN)
+            URL_OK_ERROR.format(url=URL_LOGIN)
         )
         response_json = response.json()
         assert set(response_json.keys()) == {'auth_token', }, (
             RESPONSE_EXPECTED_STRUCTURE
         )
 
-    def test_logout_authorized_client(self, authorized_client_for_first_user):
-        response = authorized_client_for_first_user.post(
-            self.URL_LOGOUT
+    def test_logout_authorized_client(self, first_user_authorized_client):
+        response = first_user_authorized_client.post(
+            URL_LOGOUT
         )
         assert response.status_code == HTTPStatus.NO_CONTENT, (
-            URL_NO_CONTENT_ERROR.format(url=self.URL_LOGOUT)
+            URL_NO_CONTENT_ERROR.format(url=URL_LOGOUT)
         )
 
     def test_logout_unauthorized_client(self, api_client):
-        response = api_client.post(self.URL_LOGOUT)
+        response = api_client.post(URL_LOGOUT)
         assert response.status_code == HTTPStatus.UNAUTHORIZED, (
-            URL_UNAUTHORIZED_ERROR.format(url=self.URL_LOGOUT)
+            URL_UNAUTHORIZED_ERROR.format(url=URL_LOGOUT)
         )

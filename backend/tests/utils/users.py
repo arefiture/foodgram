@@ -1,9 +1,12 @@
-# TODO: попробовать разбить константы в рамках пакета по тест-классам
-
-# POSTMAN-константы
+# Константы из postman
 USERNAME = 'vasya.ivanov'
 PASSWORD = 'MySecretPas$word'
 EMAIL = 'vivanov@yandex.ru'
+AVATAR = (
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAA'
+    'ACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNo'
+    'AAAAggCByxOyYQAAAABJRU5ErkJggg=='
+)
 TOO_LONG_EMAIL = (
     'i_have_never_seen_an_email_address_longer_than_two_hundred_and_fifty_'
     'four_characters_and_it_was_difficult_to_come_up_with_it_so_in_the_'
@@ -16,53 +19,21 @@ TOO_LONG_USERNAME = (
     'will-fail-'
 )
 NEW_PASSWORD = 'thi$Pa$$w0rdW@sCh@nged'
-FIRST_INGREDIENT_AMOUNT = 10
-SECOND_INGREDIENT_AMOUNT = 20
 SECOND_USER_USERNAME = 'second-user'
 SECOND_USER_EMAIL = 'second_user@email.org'
 THIRD_USER_USERNAME = 'third-user'
 THIRD_USER_EMAIL = 'third-user@user.ru'
 
-# Обязательность полей
-RESPONSE_KEY_ERROR_FIELD = 'non_field_errors'
-REQUIRED_FIELDS_ERROR = (
-    'Если в POST-запросе к `{url}` не переданы необходимые данные, '
-    'в ответе должна возвращаться информация об обязательных для '
-    'заполнения полях.'
-)
+# Адреса страниц
+URL_AVATAR = '/api/users/me/avatar/'
+URL_CREATE_USER = '/api/users/'
+URL_GET_USER = URL_CREATE_USER + '{id}/'
+URL_LOGIN = '/api/auth/token/login/'
+URL_LOGOUT = '/api/auth/token/logout/'
+URL_ME = '/api/users/me/'
+URL_SET_PASSWORD = '/api/users/set_password/'
 
-# Описание ошибок по статусам
-URL_BAD_REQUEST_ERROR = (
-    'Если POST-запрос, отправленный на эндпоинт `{url}`, '
-    'не содержит необходимых данных, должен вернуться ответ со '
-    'статусом 400.'
-)
-URL_CREATED_ERROR = (
-    'Проверьте, что POST-запрос к `{url}` с корректными '
-    'возвращает статус-код 201.'
-)
-URL_NOT_FOUND_ERROR = (
-    'Эндпоинт `{url}` не найден. Проверьте настройки в *urls.py*.'
-)
-URL_NO_CONTENT_ERROR = (
-    'Проверьте, что POST-запрос зарегистрированного пользователя к '
-    '`{url}`возвращает статус-код 204.'
-)
-URL_OK_ERROR = (
-    'Проверьте, что POST-запрос к `{url}` '
-    'с корректными возвращает статус-код 200.'
-)
-URL_UNAUTHORIZED_ERROR = (
-    'Проверьте, что POST-запрос анонимного пользователя к '
-    '`{url}`возвращает статус-код 401.'
-)
-
-# Иные ошибки ответов
-RESPONSE_EXPECTED_STRUCTURE = (
-    'Структура ответа должна соответствовать ожидаемой.'
-)
-
-# Структуры для обхода
+# Структуры для перебора
 INVALID_USER_DATA_FOR_LOGIN = [
     {
         'email': SECOND_USER_USERNAME,
@@ -181,17 +152,32 @@ FIRST_VALID_USER = {
 }
 
 SECOND_VALID_USER = {
-    "email": SECOND_USER_EMAIL,
-    "username": SECOND_USER_USERNAME,
-    "first_name": "Андрей",
-    "last_name": "Макаревский",
-    "password": PASSWORD
+    'email': SECOND_USER_EMAIL,
+    'username': SECOND_USER_USERNAME,
+    'first_name': 'Андрей',
+    'last_name': 'Макаревский',
+    'password': PASSWORD,
+    'avatar': AVATAR
 }
 
 THIRD_VALID_USER = {
-    "email": THIRD_USER_EMAIL,
-    "username": THIRD_USER_USERNAME,
-    "first_name": "Гордон",
-    "last_name": "Рамзиков",
-    "password": PASSWORD
+    'email': THIRD_USER_EMAIL,
+    'username': THIRD_USER_USERNAME,
+    'first_name': 'Гордон',
+    'last_name': 'Рамзиков',
+    'password': PASSWORD
+}
+
+# Схемы валидации данных в ответах методов
+SCHEMA_USER = {
+    'id': (int, ),
+    'username': (str, ),
+    'first_name': (str, ),
+    'last_name': (str, ),
+    'email': (str, ),
+    'is_subscribed': (bool, ),
+    'avatar': (str, type(None))
+}
+SCHEMA_ADDED_AVATAR = {
+    'avatar': (str, )
 }
