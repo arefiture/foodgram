@@ -16,6 +16,9 @@ URL_CREATED_ERROR = (
     'Проверьте, что POST-запрос к `{url}` с корректными '
     'возвращает статус-код 201.'
 )
+URL_METHOD_NOT_ALLOWED = (
+    'Убедитесь, что метод {method} не разрешен для {url}.'
+)
 URL_NOT_FOUND_ERROR = (
     'Эндпоинт `{url}` не найден. Проверьте настройки в *urls.py*.'
 )
@@ -48,6 +51,14 @@ SCHEMA_PAGINATE = {
     'results': (list, )
 }
 
+# Разрешения методов
+CHANGE_METHOD = [
+    {'url': '{url}', 'method': 'post', 'detail': False},
+    {'url': '{url}', 'method': 'put', 'detail': True},
+    {'url': '{url}', 'method': 'patch', 'detail': True},
+    {'url': '{url}', 'method': 'delete', 'detail': True},
+]
+
 
 # Вспомогательные функции
 def validate_response_schema(response_json, schema):
@@ -58,3 +69,16 @@ def validate_response_schema(response_json, schema):
         ):
             return False
     return True
+
+
+def installation_method_urls(
+    url: str,
+    url_detail: str,
+    list_method_urls: list[dict]
+) -> list[dict]:
+    result = list_method_urls.copy()
+    for item in result:
+        item['url'] = item['url'].format(
+            url=(url_detail if item['detail'] else url)
+        )
+    return result

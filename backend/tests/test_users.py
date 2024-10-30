@@ -13,7 +13,7 @@ from tests.utils.general import (
     URL_UNAUTHORIZED_ERROR,
     validate_response_schema,
 )
-from tests.utils.users import (
+from tests.utils.user import (
     AVATAR,
     FIRST_VALID_USER,
     NEW_PASSWORD,

@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from tests.utils.users import (
+from tests.utils.user import (
     FIRST_VALID_USER,
     SECOND_VALID_USER,
     THIRD_VALID_USER
