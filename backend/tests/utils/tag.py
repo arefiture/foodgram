@@ -18,11 +18,11 @@ TAG_DATA = [
 DENY_CHANGE_METHOD = installation_method_urls(
     url=URL_TAGS,
     url_detail=URL_GET_TAG.format(id=1),
-    list_method_urls=CHANGE_METHOD
+    dict_method_urls=CHANGE_METHOD
 )
 
 # Схемы валидации данных в ответах методов
-SHEMA_TAG = {
+SCHEME_TAG = {
     'id': (int, ),
     'name': (str, ),
     'slug': (str, )

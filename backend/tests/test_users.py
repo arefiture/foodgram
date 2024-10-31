@@ -11,7 +11,7 @@ from tests.utils.general import (
     URL_NOT_FOUND_ERROR,
     URL_OK_ERROR,
     URL_UNAUTHORIZED_ERROR,
-    validate_response_schema,
+    validate_response_scheme,
 )
 from tests.utils.user import (
     AVATAR,
@@ -30,15 +30,17 @@ from tests.utils.user import (
 
 @pytest.mark.django_db(transaction=True)
 class TestUsers:
-    UNAUTHORIZED_BANNED_METHODS = [
-        {'url': URL_ME, 'method': 'post'},
-        {'url': URL_AVATAR, 'method': 'put'},
-        {'url': URL_AVATAR, 'method': 'delete'},
-        {'url': URL_SET_PASSWORD, 'method': 'post'},
-    ]
+    UNAUTHORIZED_BANNED_METHODS = {
+        'post_me': {'url': URL_ME, 'method': 'post'},
+        'put_avatar': {'url': URL_AVATAR, 'method': 'put'},
+        'delete_avatar': {'url': URL_AVATAR, 'method': 'delete'},
+        'post_set_password': {'url': URL_SET_PASSWORD, 'method': 'post'},
+    }
 
-    @pytest.mark.parametrize('data', UNAUTHORIZED_BANNED_METHODS)
-    def test_bad_request_unauthorized(self, api_client, data):
+    @pytest.mark.parametrize(
+        'method_name, data', UNAUTHORIZED_BANNED_METHODS.items()
+    )
+    def test_bad_request_unauthorized(self, api_client, method_name, data):
         url = data['url']
         response = getattr(api_client, data['method'])(url)
         assert response.status_code != HTTPStatus.NOT_FOUND, (
@@ -96,12 +98,17 @@ class TestUsers:
         )
 
         response_json = response.json()
-        assert validate_response_schema(
+        assert validate_response_scheme(
             response_json, SCHEMA_PAGINATE
         ), RESPONSE_PAGINATED_STRUCTURE
+        response_count = response_json['count']
+        assert len(all_user) == response_count, (
+            'Убедитесь, что в count ответа приходит число всех записей, '
+            'существующих в БД.'
+        )
 
         response_results_json = response_json.get('results')
-        assert validate_response_schema(
+        assert validate_response_scheme(
             response_results_json[0], SCHEMA_USER
         ), RESPONSE_EXPECTED_STRUCTURE
 
@@ -121,7 +128,7 @@ class TestUsers:
             URL_OK_ERROR.format(url=url)
         )
         response_json = response.json()
-        assert validate_response_schema(
+        assert validate_response_scheme(
             response_json, SCHEMA_USER
         ), RESPONSE_EXPECTED_STRUCTURE
 
@@ -156,7 +163,7 @@ class TestUsers:
             URL_OK_ERROR.format(url=URL_ME)
         )
         response_json = response.json()
-        assert validate_response_schema(
+        assert validate_response_scheme(
             response_json, SCHEMA_USER
         ), RESPONSE_EXPECTED_STRUCTURE
         is_subscribed = response_json['is_subscribed']
@@ -187,7 +194,7 @@ class TestUsers:
             'Поле avatar в БД должно обновиться.'
         )
         response_json = response.json()
-        assert validate_response_schema(
+        assert validate_response_scheme(
             response_json, SCHEMA_ADDED_AVATAR
         ), RESPONSE_EXPECTED_STRUCTURE
 

@@ -52,16 +52,22 @@ SCHEMA_PAGINATE = {
 }
 
 # Разрешения методов
-CHANGE_METHOD = [
-    {'url': '{url}', 'method': 'post', 'detail': False},
-    {'url': '{url}', 'method': 'put', 'detail': True},
-    {'url': '{url}', 'method': 'patch', 'detail': True},
-    {'url': '{url}', 'method': 'delete', 'detail': True},
-]
+# CHANGE_METHOD = [
+#     {'url': '{url}', 'method': 'post', 'detail': False},
+#     {'url': '{url}', 'method': 'put', 'detail': True},
+#     {'url': '{url}', 'method': 'patch', 'detail': True},
+#     {'url': '{url}', 'method': 'delete', 'detail': True},
+# ]
+CHANGE_METHOD = {
+    'post': {'url': '{url}', 'detail': False},
+    'put': {'url': '{url}', 'detail': True},
+    'patch': {'url': '{url}', 'detail': True},
+    'delete': {'url': '{url}', 'detail': True},
+}
 
 
 # Вспомогательные функции
-def validate_response_schema(response_json, schema):
+def validate_response_scheme(response_json, schema):
     for field, types in schema.items():
         if not (
             field in response_json
@@ -71,14 +77,25 @@ def validate_response_schema(response_json, schema):
     return True
 
 
+# def installation_method_urls(
+#     url: str,
+#     url_detail: str,
+#     dict_method_urls: list[dict]
+# ) -> list[dict]:
+#     result = dict_method_urls.copy()
+#     for item in result:
+#         item['url'] = item['url'].format(
+#             url=(url_detail if item['detail'] else url)
+#         )
+#     return result
 def installation_method_urls(
     url: str,
     url_detail: str,
-    list_method_urls: list[dict]
-) -> list[dict]:
-    result = list_method_urls.copy()
-    for item in result:
-        item['url'] = item['url'].format(
-            url=(url_detail if item['detail'] else url)
+    dict_method_urls: dict[str, dict]
+) -> dict[str, dict]:
+    result = dict_method_urls.copy()
+    for info in result.values():
+        info['url'] = info['url'].format(
+            url=(url_detail if info['detail'] else url)
         )
     return result

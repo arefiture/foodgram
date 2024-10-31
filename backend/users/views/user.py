@@ -24,7 +24,13 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
     def me(self, request, *args, **kwargs):
         return super().me(request, *args, **kwargs)
 
-    @action(['PUT'], detail=False, url_path='me/avatar')
+    @action(
+        ['PUT'],
+        detail=False,
+        url_path='me/avatar',
+        name='set_avatar',
+        permission_classes=[CurrentUserOrAdmin]
+    )
     def avatar(self, request, *args, **kwargs):
         if 'avatar' not in request.data:
             return response.Response(
