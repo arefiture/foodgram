@@ -169,7 +169,7 @@ THIRD_VALID_USER = {
 }
 
 # Схемы валидации данных в ответах методов
-SCHEMA_USER = {
+SCHEME_USER = {
     'id': (int, ),
     'username': (str, ),
     'first_name': (str, ),

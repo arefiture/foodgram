@@ -60,7 +60,9 @@ class TestIngredient:
     ):
         url = URL_INGREDIENTS + '?name=' + name
         response = first_user_authorized_client.get(url)
-        count_DB = Ingredient.objects.filter(name__startswith=name).count()
+        count_DB = Ingredient.objects.filter(
+            name__startswith=name
+        ).distinct().count()
         response_json = response.json()
         response_count = len(response_json)
         # Проверка существования и доступности была выше
@@ -75,7 +77,7 @@ class TestIngredient:
         indirect=True
     )
     def test_get_ingredient_detail(self, client, ingredients):
-        id_tag = Ingredient.objects.first().id
+        id_tag = ingredients[0].id
         url = URL_GET_INGREDIENT.format(id=id_tag)
         response = client.get(url)
         assert response.status_code != HTTPStatus.NOT_FOUND, (
@@ -90,7 +92,7 @@ class TestIngredient:
         ), RESPONSE_PAGINATED_STRUCTURE
 
     def test_non_existing_ingredient(self, client, ingredients):
-        id_tag = max(item['id'] for item in Ingredient.objects.values('id'))
+        id_tag = max(ingredient.id for ingredient in ingredients)
         url = URL_GET_INGREDIENT.format(id=id_tag + 1)
         response = client.get(url)
         assert response.status_code == HTTPStatus.NOT_FOUND, (

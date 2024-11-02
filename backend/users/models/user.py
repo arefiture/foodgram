@@ -121,6 +121,7 @@ class User(AuthBaseModel, AbstractBaseUser):
     class Meta(AuthBaseModel.Meta):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ['date_joined']
 
     def __str__(self) -> str:
         return self.username

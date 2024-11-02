@@ -33,7 +33,8 @@ if FILENAME not in project_dir_content:
 assert get_version() < '4.0.0', 'Пожалуйста, используйте версию Django < 4.0.0'
 
 pytest_plugins = [
-    'tests.fixtures.fixture_user',
-    'tests.fixtures.fixture_tag',
     'tests.fixtures.fixture_ingredient',
+    'tests.fixtures.fixture_recipe',
+    'tests.fixtures.fixture_tag',
+    'tests.fixtures.fixture_user',
 ]

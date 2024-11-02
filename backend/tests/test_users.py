@@ -18,7 +18,7 @@ from tests.utils.user import (
     FIRST_VALID_USER,
     NEW_PASSWORD,
     SCHEMA_ADDED_AVATAR,
-    SCHEMA_USER,
+    SCHEME_USER,
     URL_AVATAR,
     URL_CREATE_USER,
     URL_GET_USER,
@@ -109,7 +109,7 @@ class TestUsers:
 
         response_results_json = response_json.get('results')
         assert validate_response_scheme(
-            response_results_json[0], SCHEMA_USER
+            response_results_json[0], SCHEME_USER
         ), RESPONSE_EXPECTED_STRUCTURE
 
     @pytest.mark.parametrize(
@@ -129,7 +129,7 @@ class TestUsers:
         )
         response_json = response.json()
         assert validate_response_scheme(
-            response_json, SCHEMA_USER
+            response_json, SCHEME_USER
         ), RESPONSE_EXPECTED_STRUCTURE
 
     @pytest.mark.parametrize('limit', [1, 999999])
@@ -164,7 +164,7 @@ class TestUsers:
         )
         response_json = response.json()
         assert validate_response_scheme(
-            response_json, SCHEMA_USER
+            response_json, SCHEME_USER
         ), RESPONSE_EXPECTED_STRUCTURE
         is_subscribed = response_json['is_subscribed']
         assert not is_subscribed, (

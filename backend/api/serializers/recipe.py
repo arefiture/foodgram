@@ -159,36 +159,6 @@ class RecipeChangeSerializer(RecipeSerializer):
         instance.recipe_ingredients.all().delete()
         return instance
 
-    # def added_tags_ingredients(self, *, ingredients, recipe, tags):
-    #     recipe.tags.set(tags)
-    #     ingredient_recipe = [
-    #         RecipeIngredients(
-    #             recipe=recipe,
-    #             ingredient=ingredient.get('id'),
-    #             amount=ingredient.get('amount')
-    #         ) for ingredient in ingredients
-    #     ]
-    #     RecipeIngredients.objects.bulk_create(ingredient_recipe)
-
-    # def create(self, validated_data: dict):
-    #     ingredients = validated_data.pop('recipe_ingredients')
-    #     tags = validated_data.pop('tags')
-    #     recipe = Recipe.objects.create(**validated_data)
-    #     self.added_tags_ingredients(
-    #         ingredients=ingredients, recipe=recipe, tags=tags
-    #     )
-    #     return recipe
-
-    # def update(self, instance, validated_data):
-    #     ingredients = validated_data.pop('recipe_ingredients')
-    #     tags = validated_data.pop('tags')
-    #     super().update(instance, validated_data)
-    #     instance.recipe_ingredients.all().delete()
-    #     self.added_tags_ingredients(
-    #         ingredients=ingredients, recipe=instance, tags=tags
-    #     )
-    #     return instance
-
     def to_representation(self, instance):
         return RecipeGetSerializer(
             instance, context=self.context

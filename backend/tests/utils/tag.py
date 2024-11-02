@@ -15,6 +15,19 @@ TAG_DATA = [
     {'name': 'Ужин', 'slug': 'dinner'}
 ]
 
+TAG_SET_SLUGS = {  # SET - не множества, а наборы
+    'one_tag': [TAG_DATA[0].get('slug')],
+    'two_tags': [
+        TAG_DATA[0].get('slug'),
+        TAG_DATA[1].get('slug')
+    ],
+    'three_tags': [
+        TAG_DATA[1].get('slug'),
+        TAG_DATA[2].get('slug'),
+        TAG_DATA[3].get('slug')
+    ]
+}
+
 DENY_CHANGE_METHOD = installation_method_urls(
     url=URL_TAGS,
     url_detail=URL_GET_TAG.format(id=1),

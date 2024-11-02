@@ -44,7 +44,7 @@ class RecipeIngredients(CookbookBaseModel):
     ingredient = models.ForeignKey(
         to=Ingredient, verbose_name='Ингредиент', on_delete=models.CASCADE
     )
-    amount = models.IntegerField(
+    amount = models.IntegerField(  # TODO: PositiveSmallIntegerField
         verbose_name='Количество в рецепте',
         validators=[
             MinValueValidator(

@@ -2,7 +2,6 @@ from http import HTTPStatus
 
 import pytest
 
-from api.models.tag import Tag
 from tests.utils.general import (
     RESPONSE_PAGINATED_STRUCTURE,
     URL_METHOD_NOT_ALLOWED,
@@ -59,7 +58,7 @@ class TestTags:
         indirect=True
     )
     def test_get_tag_detail(self, client, tags):
-        id_tag = Tag.objects.first().id
+        id_tag = tags[0].id
         url = URL_GET_TAG.format(id=id_tag)
         response = client.get(url)
         assert response.status_code != HTTPStatus.NOT_FOUND, (
@@ -74,7 +73,7 @@ class TestTags:
         ), RESPONSE_PAGINATED_STRUCTURE
 
     def test_non_existing_tag(self, client, tags):
-        id_tag = max(item['id'] for item in Tag.objects.values('id'))
+        id_tag = max(tag.id for tag in tags)
         url = URL_GET_TAG.format(id=id_tag + 1)
         response = client.get(url)
         assert response.status_code == HTTPStatus.NOT_FOUND, (

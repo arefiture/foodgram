@@ -16,8 +16,11 @@ URL_CREATED_ERROR = (
     'Проверьте, что POST-запрос к `{url}` с корректными '
     'возвращает статус-код 201.'
 )
+URL_FORBIDDEN_ERROR = (
+    'Проверьте, что метод `{method}` для `{url}` доступен только автору.'
+)
 URL_METHOD_NOT_ALLOWED = (
-    'Убедитесь, что метод {method} не разрешен для {url}.'
+    'Убедитесь, что метод `{method}` не разрешен для `{url}`.'
 )
 URL_NOT_FOUND_ERROR = (
     'Эндпоинт `{url}` не найден. Проверьте настройки в *urls.py*.'
@@ -33,6 +36,10 @@ URL_OK_ERROR = (
 URL_UNAUTHORIZED_ERROR = (
     'Проверьте, что POST-запрос анонимного пользователя к '
     '`{url}`возвращает статус-код 401.'
+)
+URL_FOUND_ERROR = (
+    'Проверьте, что GET-запрос к `{url}` с корректными '
+    'возвращает статус-код 302.'
 )
 
 # Иные ошибки ответов
@@ -52,12 +59,6 @@ SCHEMA_PAGINATE = {
 }
 
 # Разрешения методов
-# CHANGE_METHOD = [
-#     {'url': '{url}', 'method': 'post', 'detail': False},
-#     {'url': '{url}', 'method': 'put', 'detail': True},
-#     {'url': '{url}', 'method': 'patch', 'detail': True},
-#     {'url': '{url}', 'method': 'delete', 'detail': True},
-# ]
 CHANGE_METHOD = {
     'post': {'url': '{url}', 'detail': False},
     'put': {'url': '{url}', 'detail': True},
@@ -77,17 +78,6 @@ def validate_response_scheme(response_json, schema):
     return True
 
 
-# def installation_method_urls(
-#     url: str,
-#     url_detail: str,
-#     dict_method_urls: list[dict]
-# ) -> list[dict]:
-#     result = dict_method_urls.copy()
-#     for item in result:
-#         item['url'] = item['url'].format(
-#             url=(url_detail if item['detail'] else url)
-#         )
-#     return result
 def installation_method_urls(
     url: str,
     url_detail: str,

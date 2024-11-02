@@ -3,7 +3,7 @@ from http import HTTPStatus
 from django.db import IntegrityError
 import pytest
 
-from backend.tests.utils.user import (
+from tests.utils.user import (
     FIRST_VALID_USER,
     IN_USE_USER_DATA_FOR_REGISTER,
     INVALID_USER_DATA_FOR_LOGIN,
