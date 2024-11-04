@@ -35,6 +35,6 @@ class UserSerializer(CurrentUserSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         return Subscription.objects.filter(
-            follower_id=request.user.id,
-            followed_id=obj.id
+            user_id=request.user.id,
+            author_recipe_id=obj.id
         ).exists()

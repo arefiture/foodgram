@@ -15,8 +15,8 @@ class SubscribeUniqueValidator:
         self.message = message or self.message
 
     def __call__(self, attrs):
-        follower = attrs.get('follower')
-        followed = attrs.get('followed')
+        user = attrs.get('user')
+        author_recipe = attrs.get('author_recipe')
 
-        if follower == followed:
+        if user == author_recipe:
             raise ValidationError(self.message)

@@ -77,6 +77,13 @@ def second_user_token(second_user):
 
 
 @pytest.fixture
+def third_user_token(third_user):
+    return get_user_token(
+        user=third_user, password=THIRD_VALID_USER['password']
+    )
+
+
+@pytest.fixture
 def first_user_authorized_client(first_user_token):
     return authorized_client(token=first_user_token)
 
@@ -84,3 +91,8 @@ def first_user_authorized_client(first_user_token):
 @pytest.fixture
 def second_user_authorized_client(second_user_token):
     return authorized_client(token=second_user_token)
+
+
+@pytest.fixture
+def third_user_authorized_client(third_user_token):
+    return authorized_client(token=third_user_token)

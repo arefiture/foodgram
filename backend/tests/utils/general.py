@@ -66,6 +66,10 @@ CHANGE_METHOD = {
     'delete': {'url': '{url}', 'detail': True},
 }
 
+# Функции, возвращающие модели
+# TODO: добавить фикстуры, которые будут работать с моделями
+# TODO2: К примеру вместо RecipeTags может быть TagRecipes
+
 
 # Вспомогательные функции
 def validate_response_scheme(response_json, schema):

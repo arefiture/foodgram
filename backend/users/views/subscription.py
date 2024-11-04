@@ -12,8 +12,8 @@ from users.serializers import (
 class SubscriptionMixin:
     @action(['GET'], detail=False, url_path='subscriptions')
     def subscriptions(self, request):
-        follower = request.user
-        queryset = User.objects.filter(followings__follower=follower)
+        user = request.user
+        queryset = User.objects.filter(authors__user=user)
         pages = self.paginate_queryset(queryset)
 
         serializer = SubscriptionGetSerializer(
@@ -26,8 +26,8 @@ class SubscriptionMixin:
     @action(detail=True, methods=('POST', 'DELETE'), url_path='subscribe')
     def subscribe(self, request, id):
         data = {
-            'follower': request.user,
-            'followed': get_object_or_404(User, id=id)
+            'user': request.user,
+            'author_recipe': get_object_or_404(User, id=id)
         }
 
         return object_update_or_delete(

@@ -38,7 +38,7 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
         if request is None or request.user.is_anonymous:
             return False
         return Subscription.objects.filter(
-            follower=request.user, followed=obj
+            user=request.user, author_recipe=obj
         ).exists()
 
     def get_recipes(self, obj):
@@ -56,29 +56,29 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
 
 class SubscriptionChangedSerializer(serializers.ModelSerializer):
     """Сериалайзер для фолловеров. Только на запись."""
-    followed = UserSerializer
-    follower = UserSerializer
+    author_recipe = UserSerializer
+    user = UserSerializer
 
     class Meta:
         model = Subscription
-        fields = ('followed', 'follower')
+        fields = ('author_recipe', 'user')
         validators = [
             UniqueTogetherValidator(
                 queryset=Subscription.objects.all(),
-                fields=('followed', 'follower'),
+                fields=('author_recipe', 'user'),
                 message='Нельзя повторно подписаться на пользователя'
             ),
             SubscribeUniqueValidator(
-                fields=('followed', 'follower')
+                fields=('author_recipe', 'user')
             )
         ]
 
     def validate_subscription_exists(self):
-        follower = self.context.get('request').user
-        followed = self.validated_data.get('followed')
+        user = self.context.get('request').user
+        author_recipe = self.validated_data.get('author_recipe')
 
         subscription = Subscription.objects.filter(
-            followed=followed, follower=follower
+            author_recipe=author_recipe, user=user
         )
         if not subscription.exists():
             raise serializers.ValidationError(
@@ -87,6 +87,6 @@ class SubscriptionChangedSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return SubscriptionGetSerializer(
-            instance.follower,
+            instance.author_recipe,
             context={'request': self.context.get('request')}
         ).data
