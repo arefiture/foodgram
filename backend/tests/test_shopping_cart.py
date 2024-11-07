@@ -70,7 +70,7 @@ class TestShoppingCart:
     def test_add_to_shopping_cart_authorized(
         self, third_user_authorized_client, third_user, first_recipe
     ):
-        count_shopping_cart = ShoppingCart.objects.all().count()
+        count_shopping_cart = ShoppingCart.objects.count()
         url = URL_SHOPPING_CART.format(id=first_recipe.id)
         response = third_user_authorized_client.post(url)
         assert response.status_code != HTTPStatus.NOT_FOUND, (

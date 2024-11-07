@@ -121,9 +121,9 @@ class TestRecipe:
     def test_add_recipe_authorized(
         self, second_user_authorized_client, second_user, ingredients, tags
     ):
-        count_recipe = Recipe.objects.all().count()
-        count_recipe_ingredients = RecipeIngredients.objects.all().count()
-        count_recipe_tags = RecipeTags.objects.all().count()
+        count_recipe = Recipe.objects.count()
+        count_recipe_ingredients = RecipeIngredients.objects.count()
+        count_recipe_tags = RecipeTags.objects.count()
 
         body = {
             'ingredients': [

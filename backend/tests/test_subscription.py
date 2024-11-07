@@ -28,7 +28,7 @@ class TestSubscription:
     def test_add_subscribe_unauthorized(
         self, api_client, second_user
     ):
-        count_subscriptions = Subscription.objects.all().count()
+        count_subscriptions = Subscription.objects.count()
         url = URL_CREATE_SUBSCRIBE.format(id=second_user.id)
         response = api_client.post(url)
         assert response.status_code != HTTPStatus.NOT_FOUND, (
@@ -37,7 +37,7 @@ class TestSubscription:
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
             URL_BAD_REQUEST_ERROR.format(method='post', url=url)
         )
-        new_count_subscriptions = Subscription.objects.all().count()
+        new_count_subscriptions = Subscription.objects.count()
         assert count_subscriptions == new_count_subscriptions, (
             'Убедитесь, что в БД не обновились записи.'
         )
@@ -46,7 +46,7 @@ class TestSubscription:
         self, third_user_authorized_client, third_user_subscribed_to_second,
         second_user
     ):
-        count_subscriptions = Subscription.objects.all().count()
+        count_subscriptions = Subscription.objects.count()
         url = URL_CREATE_SUBSCRIBE.format(id=second_user.id)
         response = third_user_authorized_client.post(url)
         assert response.status_code != HTTPStatus.NOT_FOUND, (
@@ -55,7 +55,7 @@ class TestSubscription:
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
             URL_BAD_REQUEST_ERROR.format(method='post', url=url)
         )
-        new_count_subscriptions = Subscription.objects.all().count()
+        new_count_subscriptions = Subscription.objects.count()
         assert count_subscriptions == new_count_subscriptions, (
             'Убедитесь, что в БД не обновились записи.'
         )
@@ -63,7 +63,7 @@ class TestSubscription:
     def test_add_self_subscription(
         self, third_user_authorized_client, third_user
     ):
-        count_subscriptions = Subscription.objects.all().count()
+        count_subscriptions = Subscription.objects.count()
         url = URL_CREATE_SUBSCRIBE.format(id=third_user.id)
         response = third_user_authorized_client.post(url)
         assert response.status_code != HTTPStatus.NOT_FOUND, (
@@ -72,7 +72,7 @@ class TestSubscription:
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
             URL_BAD_REQUEST_ERROR.format(method='post', url=url)
         )
-        new_count_subscriptions = Subscription.objects.all().count()
+        new_count_subscriptions = Subscription.objects.count()
         assert count_subscriptions == new_count_subscriptions, (
             'Убедитесь, что в БД не обновились записи.'
         )
@@ -80,13 +80,13 @@ class TestSubscription:
     def test_add_subscription_to_non_existing_author(
         self, third_user_authorized_client
     ):
-        count_subscriptions = Subscription.objects.all().count()
+        count_subscriptions = Subscription.objects.count()
         url = URL_CREATE_SUBSCRIBE.format(id=9786)
         response = third_user_authorized_client.post(url)
         assert response.status_code == HTTPStatus.NOT_FOUND, (
             URL_NOT_FOUND_ERROR.format(url=url)
         )
-        new_count_subscriptions = Subscription.objects.all().count()
+        new_count_subscriptions = Subscription.objects.count()
         assert count_subscriptions == new_count_subscriptions, (
             'Убедитесь, что в БД не обновились записи.'
         )
@@ -94,7 +94,7 @@ class TestSubscription:
     def test_add_subscribe_authorized(
         self, third_user_authorized_client, first_user, third_user, all_recipes
     ):
-        count_subscriptions = Subscription.objects.all().count()
+        count_subscriptions = Subscription.objects.count()
         url = URL_CREATE_SUBSCRIBE.format(id=first_user.id)
         response = third_user_authorized_client.post(url)
         assert response.status_code != HTTPStatus.NOT_FOUND, (

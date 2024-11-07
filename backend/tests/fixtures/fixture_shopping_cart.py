@@ -10,4 +10,4 @@ def all_shopping_cart(third_user, all_recipes) -> list:
         for recipe in all_recipes
     ]
     ShoppingCart.objects.bulk_create(shopping_cart)
-    return ShoppingCart.objects.all()
+    return list(ShoppingCart.objects.all())
