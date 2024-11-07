@@ -13,9 +13,9 @@ from tests.utils.general import (
     URL_OK_ERROR,
     validate_response_scheme
 )
+from tests.utils.recipe import SCHEME_SHORT_RECIPE
 from tests.utils.subscription import (
     SCHEME_SUBSCRIPTION,
-    SCHEME_SUBSCRIPTION_RECIPE,
     URL_CREATE_SUBSCRIBE,
     URL_GET_SUBSCRIPTIONS
 )
@@ -127,7 +127,7 @@ class TestSubscription:
         if response_recipes_count:
             recipe = response_recipes[0]
             assert validate_response_scheme(
-                recipe, SCHEME_SUBSCRIPTION_RECIPE
+                recipe, SCHEME_SHORT_RECIPE
             ), RESPONSE_PAGINATED_STRUCTURE
 
     @pytest.mark.parametrize('recipes_limit', [1, 5, 10])

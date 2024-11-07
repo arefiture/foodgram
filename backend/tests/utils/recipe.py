@@ -194,6 +194,13 @@ BODY_ONLY_POST_BAD_REQUEST = {
 }
 
 # Схемы валидации данных в ответах методов
+SCHEME_SHORT_RECIPE = {
+    'id': (int, ),
+    'name': (str, ),
+    'image': (str, ),
+    'cooking_time': (int, )
+}
+
 SCHEME_RECIPE = {
     'id': (int, ),
     'tags': (list, ),

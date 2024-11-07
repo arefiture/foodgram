@@ -16,9 +16,3 @@ SCHEME_SUBSCRIPTION = {
     'recipes_count': (int, ),
     'recipes': (list, )
 }
-SCHEME_SUBSCRIPTION_RECIPE = {
-    'id': (int, ),
-    'name': (str, ),
-    'image': (str, ),
-    'cooking_time': (int, )
-}

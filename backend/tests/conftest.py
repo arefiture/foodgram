@@ -35,6 +35,7 @@ assert get_version() < '4.0.0', 'Пожалуйста, используйте в
 pytest_plugins = [
     'tests.fixtures.fixture_ingredient',
     'tests.fixtures.fixture_recipe',
+    'tests.fixtures.fixture_shopping_cart',
     'tests.fixtures.fixture_subscription',
     'tests.fixtures.fixture_tag',
     'tests.fixtures.fixture_user',

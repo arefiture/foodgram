@@ -46,15 +46,16 @@ class ShoppingCartMixin:
 
         writer = csv.writer(response)
         writer.writerow(['Ингредиент', 'Единица измерения', 'Количество'])
-        ingredients = serializer.data[0]['ingredients']
+        if serializer.data:
+            ingredients = serializer.data[0]['ingredients']
 
-        rows = map(
-            lambda ingredient: [
-                ingredient['name'],
-                ingredient['measurement_unit'],
-                ingredient['total_amount']
-            ], ingredients
-        )
-        writer.writerows(rows)
+            rows = map(
+                lambda ingredient: [
+                    ingredient['name'],
+                    ingredient['measurement_unit'],
+                    ingredient['total_amount']
+                ], ingredients
+            )
+            writer.writerows(rows)
 
         return response

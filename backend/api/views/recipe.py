@@ -32,7 +32,9 @@ class RecipeViewSet(
     serializer_class = RecipeChangeSerializer
 
     def get_permissions(self):
-        if self.request.method in ("GET", "POST"):
+        if self.action == 'download_shopping_cart':
+            self.permission_classes = [IsAuthenticated]
+        elif self.request.method in ("GET", "POST"):
             self.permission_classes = [IsAuthenticated | ReadOnly]
         elif self.request.method in ("PATCH", "DELETE"):
             self.permission_classes = [IsAuthor]
