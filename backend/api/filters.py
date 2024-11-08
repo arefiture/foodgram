@@ -34,11 +34,13 @@ class RecipeFilter(filters.FilterSet):
         self, queryset, name, value, filter_field
     ):
         author = self.request.user
-        if not value or not author.is_authenticated:
-            return queryset
-        if value:
+        if value and author.is_authenticated:
             return queryset.filter(**{filter_field: author})
-        return queryset.exclude(**{filter_field: author})
+        elif not value and author.is_authenticated:
+            return queryset.exclude(**{filter_field: author})
+        elif not value and author.is_anonymous:
+            return queryset.all()
+        return queryset.none()
 
     def filter_is_favorited(self, queryset, name, value):
         return self.filter_or_exclude_author(
