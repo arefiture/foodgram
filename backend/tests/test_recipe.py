@@ -7,8 +7,10 @@ from django.db.models import Q
 
 from api.models import (
     Recipe,
+    RecipeFavorite,
     RecipeIngredients,
-    RecipeTags
+    RecipeTags,
+    ShoppingCart
 )
 from tests.utils.tag import TAG_SET_SLUGS
 from tests.utils.general import (
@@ -328,7 +330,7 @@ class TestRecipe:
             lazy_fixture('second_user_authorized_client')
         ]
     )
-    def test_get_recipe_detailt(
+    def test_get_recipe_detail(
         self, first_recipe, client
     ):
         url = URL_GET_RECIPE.format(id=first_recipe.id)
@@ -337,7 +339,7 @@ class TestRecipe:
             URL_NOT_FOUND_ERROR.format(url=url)
         )
         assert response.status_code == HTTPStatus.OK, (
-            URL_CREATED_ERROR.format(method='patch', url=url)
+            URL_OK_ERROR.format(url=url)
         )
         response_json = response.json()
         assert validate_response_scheme(
@@ -481,4 +483,156 @@ class TestRecipe:
         ), (
             'Убедитесь, что в связующей рецепты+ингредиенты только '
             'обновленные записи'
+        )
+
+    def test_get_recipes_with_is_in_shopping_cart_param_authorized(
+        self, third_user_authorized_client, third_user, three_shopping_cart
+    ):
+        url = URL_RECIPES + '?is_in_shopping_cart=1'
+        response = third_user_authorized_client.get(url)
+        response_json = response.json()
+        response_count = response_json['count']
+        recipe_in_response = {
+            recipe['id'] for recipe in response_json['results']
+        }
+        recipe_in_DB = {
+            cart.id for cart in ShoppingCart.objects.filter(author=third_user)
+        }
+        assert (
+            response_count == len(recipe_in_response)
+            and recipe_in_response == recipe_in_DB
+        ), (
+            'Убедитесь, что фильтр is_in_shopping_cart на странице рецептов '
+            'работает.'
+        )
+
+    def test_get_recipes_with_is_not_in_shopping_cart_param_authorized(
+        self, third_user_authorized_client, third_user, three_shopping_cart
+    ):
+        url = URL_RECIPES + '?is_in_shopping_cart=0'
+        response = third_user_authorized_client.get(url)
+        response_json = response.json()
+        response_count = response_json['count']
+        recipe_in_response = {
+            recipe['id'] for recipe in response_json['results']
+        }
+        recipe_in_DB = {
+            cart.id for cart in ShoppingCart.objects.filter(author=third_user)
+        }
+        assert (
+            response_count == len(recipe_in_response)
+            and len(recipe_in_response.intersection(recipe_in_DB)) == 0
+        ), (
+            'Убедитесь, что фильтр is_in_shopping_cart на странице рецептов '
+            'работает.'
+        )
+
+    def test_get_recipes_with_is_in_shopping_cart_param_unauthorized(
+        self, api_client, three_shopping_cart
+    ):
+        url = URL_RECIPES + '?is_in_shopping_cart=1'
+        response = api_client.get(url)
+        response_json = response.json()
+        response_count = response_json['count']
+        response_results = response_json['results']
+        assert response_count == 0 == len(response_results), (
+            'Убедитесь, что для неавторизованного вернётся пустой список.'
+        )
+
+    def test_get_recipes_with_is_not_in_shopping_cart_param_unauthorized(
+        self, api_client, three_shopping_cart
+    ):
+        url = URL_RECIPES + '?is_in_shopping_cart=0'
+        response = api_client.get(url)
+        response_json = response.json()
+        response_count = response_json['count']
+        recipe_in_response = {
+            recipe['id'] for recipe in response_json['results']
+        }
+        recipe_in_DB = {
+            cart.id for cart in Recipe.objects.all()
+        }
+        assert (
+            len(recipe_in_DB) == response_count
+            and recipe_in_response == recipe_in_DB
+        ), (
+            'Для неавторизованного пользователя должны вернуться все рецепты'
+        )
+
+    def test_get_recipes_with_is_favorited_param_authorized(
+        self, third_user_authorized_client, third_user, three_shopping_cart
+    ):
+        url = URL_RECIPES + '?is_favorited=1'
+        response = third_user_authorized_client.get(url)
+        response_json = response.json()
+        response_count = response_json['count']
+        recipe_in_response = {
+            recipe['id'] for recipe in response_json['results']
+        }
+        recipe_in_DB = {
+            cart.id for cart in RecipeFavorite.objects.filter(
+                author=third_user
+            )
+        }
+        assert (
+            response_count == len(recipe_in_response)
+            and recipe_in_response == recipe_in_DB
+        ), (
+            'Убедитесь, что фильтр is_in_shopping_cart на странице рецептов '
+            'работает.'
+        )
+
+    def test_get_recipes_with_is_unfavorited_param_authorized(
+        self, third_user_authorized_client, third_user, three_shopping_cart
+    ):
+        url = URL_RECIPES + '?is_favorited=0'
+        response = third_user_authorized_client.get(url)
+        response_json = response.json()
+        response_count = response_json['count']
+        recipe_in_response = {
+            recipe['id'] for recipe in response_json['results']
+        }
+        recipe_in_DB = {
+            cart.id for cart in RecipeFavorite.objects.filter(
+                author=third_user
+            )
+        }
+        assert (
+            response_count == len(recipe_in_response)
+            and len(recipe_in_response.intersection(recipe_in_DB)) == 0
+        ), (
+            'Убедитесь, что фильтр is_in_shopping_cart на странице рецептов '
+            'работает.'
+        )
+
+    def test_get_recipes_with_is_favorited_param_unauthorized(
+        self, api_client, three_shopping_cart
+    ):
+        url = URL_RECIPES + '?is_favorited=1'
+        response = api_client.get(url)
+        response_json = response.json()
+        response_count = response_json['count']
+        response_results = response_json['results']
+        assert response_count == 0 == len(response_results), (
+            'Убедитесь, что для неавторизованного вернётся пустой список.'
+        )
+
+    def test_get_recipes_with_is_unfavorited_param_unauthorized(
+        self, api_client, three_shopping_cart
+    ):
+        url = URL_RECIPES + '?is_favorited=0'
+        response = api_client.get(url)
+        response_json = response.json()
+        response_count = response_json['count']
+        recipe_in_response = {
+            recipe['id'] for recipe in response_json['results']
+        }
+        recipe_in_DB = {
+            cart.id for cart in Recipe.objects.all()
+        }
+        assert (
+            len(recipe_in_DB) == response_count
+            and recipe_in_response == recipe_in_DB
+        ), (
+            'Для неавторизованного пользователя должны вернуться все рецепты'
         )
