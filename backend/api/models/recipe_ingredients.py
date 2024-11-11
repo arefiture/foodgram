@@ -58,5 +58,8 @@ class RecipeIngredients(CookbookBaseModel):
 
     class Meta(CookbookBaseModel.Meta):
         default_related_name = 'recipe_ingredients'
-        verbose_name = 'Ингредиент рецепта'
-        verbose_name_plural = 'Ингредиенты рецептов'
+        verbose_name = 'ингредиент рецепта'
+        verbose_name_plural = 'Связь ингредиентов с рецептами'
+
+    def __str__(self):
+        return f'Рецепт #{self.recipe.id} - Ингредиент #{self.ingredient.id}'

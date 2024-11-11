@@ -19,9 +19,9 @@ class Tag(CookbookBaseModel):
     )
 
     class Meta(CookbookBaseModel.Meta):
-        verbose_name = 'Тег'
+        verbose_name = 'тег'
         verbose_name_plural = 'Теги'
         ordering = ['name']
 
     def __str__(self) -> str:
-        return self.name
+        return self.name.capitalize()

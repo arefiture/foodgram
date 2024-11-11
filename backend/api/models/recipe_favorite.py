@@ -23,5 +23,8 @@ class RecipeFavorite(CookbookBaseModel):
             )
         ]
         default_related_name = 'recipe_favorite'
-        verbose_name = 'Избранный рецепт'
+        verbose_name = 'избранный рецепт'
         verbose_name_plural = 'Избранные рецепты'
+
+    def __str__(self) -> str:
+        return f'Рецепт #{self.recipe.id}'

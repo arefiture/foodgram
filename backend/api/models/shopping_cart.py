@@ -23,5 +23,8 @@ class ShoppingCart(CookbookBaseModel):
             )
         ]
         default_related_name = 'shopping_cart'
-        verbose_name = 'Ингредиент с рецепта для покупок'
-        verbose_name_plural = 'Ингредиенты с рецепта для покупок'
+        verbose_name = 'рецепт к покупке'
+        verbose_name_plural = 'Корзина покупок'
+
+    def __str__(self) -> str:
+        return f'Рецепт #{self.recipe.id}'

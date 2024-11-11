@@ -19,9 +19,9 @@ class Ingredient(CookbookBaseModel):
     # TODO: Возможно, стоит единицы измерений вынести в отдельную модель
 
     class Meta(CookbookBaseModel.Meta):
-        verbose_name = 'Ингредиент'
+        verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
         ordering = ['name']
 
     def __str__(self) -> str:
-        return self.name
+        return f'{self.name.capitalize()} - {self.measurement_unit}.'

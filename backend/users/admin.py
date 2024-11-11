@@ -1,10 +1,17 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from django.forms import PasswordInput, ModelForm
+from django.forms import (
+    ModelForm,
+    PasswordInput,
+)
 from django.urls import reverse
 from django.utils.html import format_html
 from rest_framework.authtoken.models import TokenProxy
 
+from api.models import (
+    RecipeFavorite,
+    ShoppingCart
+)
 from users.models import (
     Subscription,
     User
@@ -15,6 +22,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
     list_display = ('id', 'get_author_recipe', 'get_user', 'created_at')
     search_fields = ('author_recipe__username', 'user__username')
+    autocomplete_fields = ('author_recipe', 'user')
     ordering = ('id', )
     readonly_fields = ('created_at', )
 
@@ -65,6 +73,18 @@ class UserAdminForm(ModelForm):
             )
 
 
+class RecipeFavoriteInline(admin.TabularInline):
+    model = RecipeFavorite
+    autocomplete_fields = ['recipe']
+    extra = 1
+
+
+class ShoppingCartInline(admin.TabularInline):
+    model = ShoppingCart
+    autocomplete_fields = ['recipe']
+    extra = 1
+
+
 class UserAdmin(admin.ModelAdmin):
     form = UserAdminForm
     list_display = (
@@ -104,7 +124,7 @@ class UserAdmin(admin.ModelAdmin):
                 }
             ),
             (
-                None, {
+                'Служебная информация', {
                     'fields': ('date_joined', *fields)
                 }
             )
@@ -116,6 +136,7 @@ class UserAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, extra_content=None):
         self.set_fieldsets(enabled_password=False, fields=['last_login'])
+        self.inlines = [RecipeFavoriteInline, ShoppingCartInline]
         return super(UserAdmin, self).change_view(request, object_id)
 
 

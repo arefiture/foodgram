@@ -22,11 +22,11 @@ User = get_user_model()
 class Recipe(CookbookBaseModel):
 
     tags = models.ManyToManyField(
-        Tag, through='RecipeTags'
+        Tag, through='RecipeTags', verbose_name='Теги'
     )
     author = UserForeignKey(verbose_name='Автор рецепта')
     ingredients = models.ManyToManyField(
-        Ingredient, through='RecipeIngredients'
+        Ingredient, through='RecipeIngredients', verbose_name='Ингредиенты'
     )
     name = models.CharField(
         verbose_name='Наименование рецепта',
@@ -54,12 +54,12 @@ class Recipe(CookbookBaseModel):
 
     class Meta(CookbookBaseModel.Meta):
         default_related_name = 'recipes'
-        verbose_name = 'Рецепт'
+        verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ['name']
 
     def __str__(self) -> str:
-        return self.name
+        return f'[{self.id}] {self.name}'
 
     def get_absolute_url(self) -> str:
         return RECIPE_DETAIL_URL.format(pk=self.pk)

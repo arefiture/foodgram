@@ -17,3 +17,6 @@ class RecipeTags(CookbookBaseModel):
         default_related_name = 'recipe_tags'
         verbose_name = 'Тег рецепта'
         verbose_name_plural = 'Теги рецептов'
+
+    def __str__(self):
+        return f'Рецепт #{self.recipe.id} - Тег #{self.tag.id}'
