@@ -1,10 +1,5 @@
-# Обязательность полей
-RESPONSE_KEY_ERROR_FIELD = 'non_field_errors'
-REQUIRED_FIELDS_ERROR = (
-    'Если в POST-запросе к `{url}` не переданы необходимые данные, '
-    'в ответе должна возвращаться информация об обязательных для '
-    'заполнения полях.'
-)
+# Числовые константы
+NOT_EXISTING_ID = 9786
 
 # Описание ошибок по статусам
 URL_BAD_REQUEST_ERROR = (
@@ -46,17 +41,6 @@ URL_FOUND_ERROR = (
 RESPONSE_EXPECTED_STRUCTURE = (
     'Структура ответа должна соответствовать ожидаемой.'
 )
-RESPONSE_PAGINATED_STRUCTURE = (
-    'Убедитесь, что для запрошенного эндпоинта настроена пагинация.'
-)
-
-# Схемы валидации данных в ответах методов
-SCHEMA_PAGINATE = {
-    'count': (int, ),
-    'next': (str, type(None)),
-    'previous': (str, type(None)),
-    'results': (list, )
-}
 
 # Разрешения методов
 CHANGE_METHOD = {
@@ -66,22 +50,8 @@ CHANGE_METHOD = {
     'delete': {'url': '{url}', 'detail': True},
 }
 
-# Функции, возвращающие модели
-# TODO: добавить фикстуры, которые будут работать с моделями
-# TODO2: К примеру вместо RecipeTags может быть TagRecipes
-
 
 # Вспомогательные функции
-def validate_response_scheme(response_json, schema):
-    for field, types in schema.items():
-        if not (
-            field in response_json
-            or isinstance(response_json[field], types)
-        ):
-            return False
-    return True
-
-
 def installation_method_urls(
     url: str,
     url_detail: str,

@@ -1,7 +1,9 @@
 import pytest
 
-from api.models.ingredient import Ingredient
 from tests.utils.ingredient import INGREDIENT_DATA
+from tests.utils.models import ingredient_model
+
+Ingredient = ingredient_model()
 
 
 @pytest.fixture

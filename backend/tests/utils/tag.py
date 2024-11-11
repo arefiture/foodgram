@@ -35,8 +35,18 @@ DENY_CHANGE_METHOD = installation_method_urls(
 )
 
 # Схемы валидации данных в ответах методов
-SCHEME_TAG = {
-    'id': (int, ),
-    'name': (str, ),
-    'slug': (str, )
+RESPONSE_SCHEMA_TAG = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "number"},
+        "name": {"type": "string"},
+        "slug": {"type": "string"},
+    },
+    "required": ["id", "name", "slug"],
+    "additionalProperties": False
+}
+
+RESPONSE_SCHEMA_TAGS = {
+    "type": "array",
+    "items": RESPONSE_SCHEMA_TAG
 }

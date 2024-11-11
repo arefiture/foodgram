@@ -1,6 +1,8 @@
 import pytest
 
-from api.models.shopping_cart import ShoppingCart
+from tests.utils.models import shopping_cart_model
+
+ShoppingCart = shopping_cart_model()
 
 
 @pytest.fixture

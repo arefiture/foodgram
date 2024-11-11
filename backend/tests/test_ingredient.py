@@ -1,37 +1,37 @@
-from http import HTTPStatus
-
 import pytest
+from rest_framework.response import Response
+from rest_framework.test import APIClient
 
-from api.models.ingredient import Ingredient
-from tests.utils.general import (
-    RESPONSE_PAGINATED_STRUCTURE,
-    URL_METHOD_NOT_ALLOWED,
-    URL_NOT_FOUND_ERROR,
-    URL_OK_ERROR,
-    validate_response_scheme,
-)
+from tests.base_test import BaseTest
+from tests.utils.general import NOT_EXISTING_ID
 from tests.utils.ingredient import (
     INGREDIENT_SEARCH_DATA,
-    SCHEME_INGREDIENT,
+    RESPONSE_SCHEMA_INGREDIENT,
+    RESPONSE_SCHEMA_INGREDIENTS,
     URL_GET_INGREDIENT,
     URL_INGREDIENTS,
     DENY_CHANGE_METHOD
 )
+from tests.utils.models import ingredient_model
+
+Ingredient = ingredient_model()
 
 
 @pytest.mark.django_db(transaction=True)
-class TestIngredient:
+class TestIngredient(BaseTest):
 
     @pytest.mark.parametrize(
         'method, method_info', DENY_CHANGE_METHOD.items()
     )
+    @pytest.mark.usefixtures('ingredients')
     def test_bad_request_methods(
-        self, first_user_authorized_client, ingredients, method, method_info
+        self, first_user_authorized_client: APIClient, method: str,
+        method_info: dict
     ):
-        url = method_info['url']
-        response = getattr(first_user_authorized_client, method)(url)
-        assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED, (
-            URL_METHOD_NOT_ALLOWED.format(method=method.upper(), url=url)
+        self.url_is_not_allowed_for_method(
+            client=first_user_authorized_client,
+            url=method_info['url'],
+            method=method
         )
 
     @pytest.mark.parametrize(
@@ -39,36 +39,32 @@ class TestIngredient:
         ['api_client', 'first_user_authorized_client'],
         indirect=True
     )
+    @pytest.mark.usefixtures('ingredients')
     def test_get_ingredients(
-        self, client, ingredients
+        self, client: APIClient
     ):
-        response = client.get(URL_INGREDIENTS)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_INGREDIENTS)
+        self.url_get_resource(
+            client=client,
+            url=URL_INGREDIENTS,
+            response_schema=RESPONSE_SCHEMA_INGREDIENTS
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=URL_INGREDIENTS)
-        )
-        response_json = response.json()
-        assert isinstance(response_json, list) and validate_response_scheme(
-            response_json[0], SCHEME_INGREDIENT
-        ), RESPONSE_PAGINATED_STRUCTURE
 
     @pytest.mark.parametrize('name', INGREDIENT_SEARCH_DATA)
+    @pytest.mark.usefixtures('ingredients')
     def test_get_ingredients_with_name_filter(
-        self, first_user_authorized_client, ingredients, name
+        self, first_user_authorized_client: APIClient, name: str
     ):
         url = URL_INGREDIENTS + '?name=' + name
-        response = first_user_authorized_client.get(url)
-        count_DB = Ingredient.objects.filter(
-            name__startswith=name
-        ).distinct().count()
-        response_json = response.json()
-        response_count = len(response_json)
-        # Проверка существования и доступности была выше
-        assert count_DB == response_count, (
-            'Убедитесь, что фильтрация работает корректно. Ожидалось '
-            f'{count_DB} элементов, пришло {response_count}.'
+        response: Response = first_user_authorized_client.get(url)
+        self.url_get_resource(
+            response=response,
+            url=url,
+            response_schema=RESPONSE_SCHEMA_INGREDIENTS
+        )
+        self.url_filters_by_query_parameters(
+            response=response,
+            model=Ingredient,
+            filters={'name__startswith': name}
         )
 
     @pytest.mark.parametrize(
@@ -76,25 +72,19 @@ class TestIngredient:
         ['api_client', 'first_user_authorized_client'],
         indirect=True
     )
-    def test_get_ingredient_detail(self, client, ingredients):
-        id_tag = ingredients[0].id
-        url = URL_GET_INGREDIENT.format(id=id_tag)
-        response = client.get(url)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
+    def test_get_ingredient_detail(self, client: APIClient, ingredients: list):
+        self.url_get_resource(
+            client=client,
+            url=URL_GET_INGREDIENT.format(id=ingredients[0].id),
+            response_schema=RESPONSE_SCHEMA_INGREDIENT
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=url)
-        )
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEME_INGREDIENT
-        ), RESPONSE_PAGINATED_STRUCTURE
 
-    def test_non_existing_ingredient(self, client, ingredients):
-        id_tag = max(ingredient.id for ingredient in ingredients)
-        url = URL_GET_INGREDIENT.format(id=id_tag + 1)
-        response = client.get(url)
-        assert response.status_code == HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
+    @pytest.mark.usefixtures('ingredients')
+    def test_non_existing_ingredient(
+        self, first_user_authorized_client: APIClient
+    ):
+        self.url_is_missing_for_method(
+            client=first_user_authorized_client,
+            url=URL_GET_INGREDIENT.format(id=NOT_EXISTING_ID),
+            method='get'
         )

@@ -121,25 +121,14 @@ IN_USE_USER_DATA_FOR_REGISTER = [
         'username': 'EmailInUse',
         'first_name': 'Email',
         'last_name': 'InUse',
-        'password': PASSWORD,
-        'assert_msg': (
-            'Если POST-запрос, отправленный на эндпоинт `{url}`, '
-            'содержит `email` зарегистрированного пользователя и незанятый '
-            '`username` - должен вернуться ответ со статусом 400.'
-        )
+        'password': PASSWORD
     },
     {
         'email': 'username-in-use@user.ru',
         'username': USERNAME,
         'first_name': 'Username',
         'last_name': 'InUse',
-        'password': PASSWORD,
-        'assert_msg': (
-            'Если POST-запрос, отправленный на эндпоинт `{url}`, '
-            'содержит `username` зарегистрированного пользователя и '
-            'несоответствующий ему `email` - должен вернуться ответ со '
-            'статусом 400.'
-        )
+        'password': PASSWORD
     }
 ]
 
@@ -169,15 +158,63 @@ THIRD_VALID_USER = {
 }
 
 # Схемы валидации данных в ответах методов
-SCHEME_USER = {
-    'id': (int, ),
-    'username': (str, ),
-    'first_name': (str, ),
-    'last_name': (str, ),
-    'email': (str, ),
-    'is_subscribed': (bool, ),
-    'avatar': (str, type(None))
+RESPONSE_SCHEMA_TOKEN = {
+    "type": "object",
+    "properties": {
+        "auth_token": {"type": "string"},
+    },
+    "required": ["auth_token"],
+    "additionalProperties": False
 }
-SCHEMA_ADDED_AVATAR = {
-    'avatar': (str, )
+
+RESPONSE_SCHEMA_AVATAR = {
+    "type": "object",
+    "properties": {
+        "avatar": {"type": "string"}
+    },
+    "required": ["avatar"],
+    "additionalProperties": False,
+}
+
+RESPONSE_SCHEMA_USER = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "number"},
+        "username": {"type": "string"},
+        "first_name": {"type": "string"},
+        "last_name": {"type": "string"},
+        "email": {"type": "string"},
+        "is_subscribed": {"type": "boolean"},
+        "avatar": {"type": ["string", "null"]}
+    },
+    "required": [
+        "id", "username", "first_name", "last_name", "email",
+        "is_subscribed", "avatar"
+    ],
+    "additionalProperties": False
+}
+
+RESPONSE_SCHEMA_USERS = {
+    "type": "object",
+    "properties": {
+        "count": {"type": "number"},
+        "next": {"type": ["string", "null"]},
+        "previous": {"type": ["string", "null"]},
+        "results": {
+            "type": "array",
+            "items": {
+                "type": RESPONSE_SCHEMA_USER['type'],
+                "properties": RESPONSE_SCHEMA_USER['properties'],
+                "required": [
+                    "id", "username", "first_name", "last_name",
+                    "email", "avatar"
+                ],
+                "additionalProperties": RESPONSE_SCHEMA_USER[
+                    'additionalProperties'
+                ]
+            }
+        }
+    },
+    "required": ["count", "next", "previous", "results"],
+    "additionalProperties": False
 }

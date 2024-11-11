@@ -1,5 +1,5 @@
-from tests.utils.ingredient import SCHEME_INGREDIENT
-from tests.utils.tag import SCHEME_TAG
+from tests.utils.user import RESPONSE_SCHEMA_USER
+from tests.utils.tag import RESPONSE_SCHEMA_TAG
 
 # Константы из postman
 IMAGE = (
@@ -194,31 +194,75 @@ BODY_ONLY_POST_BAD_REQUEST = {
 }
 
 # Схемы валидации данных в ответах методов
-SCHEME_SHORT_RECIPE = {
-    'id': (int, ),
-    'name': (str, ),
-    'image': (str, ),
-    'cooking_time': (int, )
+RESPONSE_SCHEMA_SHORT_RECIPE = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "number"},
+        "name": {"type": "string"},
+        "image": {"type": "string"},
+        "cooking_time": {"type": "number"}
+    },
+    "required": ["id", "name", "image", "cooking_time"],
+    "additionalProperties": False
 }
 
-SCHEME_RECIPE = {
-    'id': (int, ),
-    'tags': (list, ),
-    'author': (dict, ),
-    'ingredients': (list, ),
-    'is_favorited': (bool, ),
-    'is_in_shopping_cart': (bool, ),
-    'name': (str, ),
-    'image': (str, ),
-    'text': (str, ),
-    'cooking_time': (int, )
+RESPONSE_SCHEMA_SHORT_LINK = {
+    "type": "object",
+    "properties": {
+        "short-link": {"type": "string"}
+    },
+    "required": ["short-link"],
+    "additionalProperties": False,
 }
 
-SCHEME_RECIPE_INGREDIENT = SCHEME_INGREDIENT | {
-    'amount': (int, ),
+RESPONSE_SCHEMA_RECIPE = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "number"},
+        "tags": {
+            "type": "array",
+            "items": RESPONSE_SCHEMA_TAG
+        },
+        "author": RESPONSE_SCHEMA_USER,
+        "ingredients": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "number"},
+                    "name": {"type": "string"},
+                    "measurement_unit": {"type": "string"},
+                    "amount": {"type": "number"}
+                },
+                "required": ["id", "name", "measurement_unit", "amount"],
+                "additionalProperties": False
+            }
+        },
+        "is_favorited": {"type": "boolean"},
+        "is_in_shopping_cart": {"type": "boolean"},
+        "name": {"type": "string"},
+        "image": {"type": "string"},
+        "text": {"type": "string"},
+        "cooking_time": {"type": "number"}
+    },
+    "required": [
+        "id", "tags", "author", "ingredients", "is_favorited",
+        "is_in_shopping_cart", "name", "image", "text", "cooking_time"
+    ],
+    "additionalProperties": False
 }
 
-SCHEME_RECIPE_FIELDS = {
-    'ingredients': SCHEME_RECIPE_INGREDIENT,
-    'tags': SCHEME_TAG
+RESPONSE_SCHEMA_RECIPES = {
+    "type": "object",
+    "required": ["count", "next", "previous", "results"],
+    "additionalProperties": False,
+    "properties": {
+        "count": {"type": "number"},
+        "next": {"type": ["string", "null"]},
+        "previous": {"type": ["string", "null"]},
+        "results": {
+            "type": "array",
+            "items": RESPONSE_SCHEMA_RECIPE
+        }
+    }
 }

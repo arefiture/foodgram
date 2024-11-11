@@ -1,129 +1,117 @@
 import re
-from http import HTTPStatus
 
 import pytest
+from django.db.models import Model, Q
+from pytest_django.fixtures import SettingsWrapper
 from pytest_lazyfixture import lazy_fixture
-from django.db.models import Q
+from rest_framework.response import Response
+from rest_framework.test import APIClient
 
-from api.models import (
-    Recipe,
-    RecipeFavorite,
-    RecipeIngredients,
-    RecipeTags,
-    ShoppingCart
+from tests.base_test import BaseTest
+from tests.utils.models import (
+    recipe_model,
+    recipe_favorite_model,
+    recipe_ingredients_model,
+    recipe_tags_model,
+    shopping_cart_model
 )
 from tests.utils.tag import TAG_SET_SLUGS
-from tests.utils.general import (
-    RESPONSE_PAGINATED_STRUCTURE,
-    SCHEMA_PAGINATE,
-    URL_BAD_REQUEST_ERROR,
-    URL_CREATED_ERROR,
-    URL_FORBIDDEN_ERROR,
-    URL_FOUND_ERROR,
-    URL_NOT_FOUND_ERROR,
-    URL_OK_ERROR,
-    URL_UNAUTHORIZED_ERROR,
-    validate_response_scheme
-)
+from tests.utils.general import NOT_EXISTING_ID
 from tests.utils.recipe import (
     BODY_ONLY_POST_BAD_REQUEST,
     BODY_POST_AND_PATH_BAD_REQUESTS,
     BODY_UPDATE_VALID,
     IMAGE,
-    SCHEME_RECIPE,
-    SCHEME_RECIPE_FIELDS,
+    RESPONSE_SCHEMA_RECIPE,
+    RESPONSE_SCHEMA_RECIPES,
+    RESPONSE_SCHEMA_SHORT_LINK,
     URL_GET_RECIPE,
     URL_GET_SHORT_LINK,
     URL_RECIPES,
     URL_SHORT_LINK
 )
-from tests.utils.user import SCHEME_USER
+
+Recipe = recipe_model()
+RecipeFavorite = recipe_favorite_model()
+RecipeIngredients = recipe_ingredients_model()
+RecipeTags = recipe_tags_model()
+ShoppingCart = shopping_cart_model()
 
 
 @pytest.mark.django_db(transaction=True)
-class TestRecipe:
+class TestRecipe(BaseTest):
 
     @pytest.mark.parametrize(
         'subname_test, body', (
             BODY_ONLY_POST_BAD_REQUEST | BODY_POST_AND_PATH_BAD_REQUESTS
         ).items()
     )
+    @pytest.mark.usefixtures('subname_test')
     def test_bad_request_method_post(
-        self, second_user_authorized_client,
-        subname_test, body
+        self, second_user_authorized_client: APIClient, body: dict
     ):
-        url = URL_RECIPES
-        response = second_user_authorized_client.post(url, body)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
-        )
-        assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            URL_BAD_REQUEST_ERROR.format(url=url)
+        self.url_bad_request_for_invalid_data(
+            client=second_user_authorized_client,
+            url=URL_RECIPES,
+            data=body
         )
 
     @pytest.mark.parametrize(
         'subname_test, body', BODY_POST_AND_PATH_BAD_REQUESTS.items()
     )
+    @pytest.mark.usefixtures('subname_test')
     def test_bad_request_method_patch(
-        self, second_user_authorized_client, first_recipe,
-        subname_test, body
+        self, second_user_authorized_client: APIClient, first_recipe: Model,
+        body: dict
     ):
-        id_recipe = first_recipe.id
-        url = URL_GET_RECIPE.format(id=id_recipe)
-        response = second_user_authorized_client.patch(url, body)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
-        )
-        assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            URL_BAD_REQUEST_ERROR.format(url=url)
+        self.url_bad_request_for_invalid_data(
+            client=second_user_authorized_client,
+            url=URL_GET_RECIPE.format(id=first_recipe.id),
+            method='patch',
+            data=body
         )
 
-    def test_add_recipe_unauthorized(self, api_client, secound_author_recipes):
-        response = api_client.post(URL_RECIPES)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_RECIPES)
-        )
-        assert response.status_code == HTTPStatus.UNAUTHORIZED, (
-            URL_UNAUTHORIZED_ERROR.format(url=URL_RECIPES)
+    @pytest.mark.usefixtures('secound_author_recipes')
+    def test_add_recipe_unauthorized(self, api_client: APIClient):
+        self.url_requires_authorization(
+            client=api_client,
+            url=URL_RECIPES
         )
 
-    def test_update_recipe_unauthorized(self, api_client, first_recipe):
-        id_recipe = first_recipe.id
-        url = URL_GET_RECIPE.format(id=id_recipe)
-        response = api_client.patch(url, BODY_UPDATE_VALID)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
-        )
-        assert response.status_code == HTTPStatus.UNAUTHORIZED, (
-            URL_UNAUTHORIZED_ERROR.format(url=url)
+    def test_update_recipe_unauthorized(
+        self, api_client: APIClient, first_recipe: Model
+    ):
+        self.url_requires_authorization(
+            client=api_client,
+            url=URL_GET_RECIPE.format(id=first_recipe.id),
+            method='patch',
+            data=BODY_UPDATE_VALID
         )
 
     def test_update_recipe_non_author(
-        self, first_user_authorized_client, first_recipe
+        self, first_user_authorized_client: APIClient, first_recipe: Model
     ):
-        id_recipe = first_recipe.id
-        url = URL_GET_RECIPE.format(id=id_recipe)
-        response = first_user_authorized_client.patch(url, BODY_UPDATE_VALID)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
-        )
-        assert response.status_code == HTTPStatus.FORBIDDEN, (
-            URL_FORBIDDEN_ERROR.format(method='patch', url=url)
+        self.url_access_denied(
+            client=first_user_authorized_client,
+            url=URL_GET_RECIPE.format(id=first_recipe.id),
+            method='patch',
+            body=BODY_UPDATE_VALID
         )
 
     def test_update_recipe_none_existing_recipe(
-        self, second_user_authorized_client
+        self, second_user_authorized_client: APIClient
     ):
-        url = URL_GET_RECIPE.format(id=9786)
-        response = second_user_authorized_client.patch(url, BODY_UPDATE_VALID)
-        assert response.status_code == HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
+        self.url_is_missing_for_method(
+            client=second_user_authorized_client,
+            url=URL_GET_RECIPE.format(id=NOT_EXISTING_ID),
+            method='patch'
         )
 
-    def test_add_recipe_authorized(
-        self, second_user_authorized_client, second_user, ingredients, tags
+    @pytest.mark.usefixtures('second_user')
+    def test_add_recipe_authorized(  # TODO: Возможно, вынести часть логики
+        self, second_user_authorized_client: APIClient, ingredients: list,
+        tags: list
     ):
-        count_recipe = Recipe.objects.count()
         count_recipe_ingredients = RecipeIngredients.objects.count()
         count_recipe_tags = RecipeTags.objects.count()
 
@@ -144,28 +132,22 @@ class TestRecipe:
         count_body_recipe_ingredients = len(body.get('ingredients'))
         count_body_recipe_tags = len(body.get('tags'))
 
-        response = second_user_authorized_client.post(
-            URL_RECIPES,
-            data=body
-        )
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_RECIPES)
-        )
-        assert response.status_code == HTTPStatus.CREATED, (
-            URL_CREATED_ERROR.format(method='patch', url=URL_RECIPES)
-        )
-
-        new_recipes = Recipe.objects.filter(
-            name=body.get('name'),
-            text=body.get('text'),
-            cooking_time=body.get('cooking_time'))
-        assert new_recipes.exists() and new_recipes.count() == (
-            count_recipe + 1
-        ), (
-            'Убедитесь, что рецепт добавился в БД с ожидаемыми полями.'
+        response: Response = self.url_creates_resource(
+            client=second_user_authorized_client,
+            url=URL_RECIPES,
+            data=body,
+            model=Recipe,
+            filters={
+                'name': body.get('name'),
+                'text': body.get('text'),
+                'cooking_time': body.get('cooking_time')
+            },
+            response_schema=RESPONSE_SCHEMA_RECIPE
         )
 
-        id_new_recipe = new_recipes[0].id  # После фильтра кверисет обрубаем
+        data: dict = response.json()
+        id_new_recipe: int = data['id']
+
         new_recipe_tags = RecipeTags.objects.filter(
             recipe_id=id_new_recipe,
             tag_id__in=body.get('tags')
@@ -195,86 +177,43 @@ class TestRecipe:
             'в БД с ожидаемыми полями.'
         )
 
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEME_RECIPE
-        ), RESPONSE_PAGINATED_STRUCTURE
-        # Для ингров и тегов - списки.
-        for field, scheme in SCHEME_RECIPE_FIELDS.items():
-            assert validate_response_scheme(
-                response_json.get(field)[0], scheme
-            ), RESPONSE_PAGINATED_STRUCTURE
-        assert validate_response_scheme(
-            response_json.get('author'), SCHEME_USER
-        ), RESPONSE_PAGINATED_STRUCTURE
-
     @pytest.mark.parametrize(
         'client',
         ['api_client', 'first_user_authorized_client'],
         indirect=True
     )
+    @pytest.mark.usefixtures('all_recipes')
     def test_get_recipes(
-        self, client, all_recipes, settings
+        self, client: APIClient, settings: SettingsWrapper
     ):
-        response = client.get(URL_RECIPES)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_RECIPES)
-        )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=URL_RECIPES)
-        )
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEMA_PAGINATE
-        ), RESPONSE_PAGINATED_STRUCTURE
-
-        response_count = response_json.get('count', 0)
-        assert response_count == len(all_recipes), (
-            'Убедитесь, что в count ответа на GET-запрос по адресу '
-            f'`{URL_RECIPES}` вернул все рецепты из БД.'
+        response: Response = client.get(URL_RECIPES)
+        self.url_get_resource(
+            response=response,
+            url=URL_RECIPES,
+            response_schema=RESPONSE_SCHEMA_RECIPES
         )
         # TODO: если вдруг падают тесты, нужно использовать проверку:
         # page_size = YourViewSet().pagination_class.page_size
-        response_results = response_json.get('results', [])
-        page_size = settings.REST_FRAMEWORK.get("PAGE_SIZE", None)
-        expected_count_results = (
-            response_count if response_count < page_size else page_size
+        self.url_pagination_results(
+            data=response.json(),
+            limit=settings.REST_FRAMEWORK.get("PAGE_SIZE", 10)
         )
-        response_results_count = len(response_results)
-        assert response_results_count == expected_count_results, (
-            f'Убедитесь, что в results отдало {expected_count_results} '
-            'объектов. Сейчас вернуло {response_results_count}.'
-        )
-        response_recipe = response_results[0]
-        assert validate_response_scheme(
-            response_recipe, SCHEME_RECIPE
-        ), RESPONSE_PAGINATED_STRUCTURE
-        for field, scheme in SCHEME_RECIPE_FIELDS.items():
-            assert validate_response_scheme(
-                response_recipe.get(field)[0], scheme
-            ), RESPONSE_PAGINATED_STRUCTURE
-        assert validate_response_scheme(
-            response_recipe.get('author'), SCHEME_USER
-        ), RESPONSE_PAGINATED_STRUCTURE
 
     @pytest.mark.parametrize('count', [1, 5, 20])
+    @pytest.mark.usefixtures('secound_author_recipes')
     def test_get_recipes_paginated(
-        self, api_client, secound_author_recipes, count
+        self, api_client: APIClient, count: int
     ):
         url = URL_RECIPES + '?limit=' + str(count)
-        response = api_client.get(url)
-        # Проверка на доступность адреса выше
-        response_json = response.json()
-        response_results = response_json.get('results', [])
-        response_results_len = len(response_results)
-        recipes_len = len(secound_author_recipes)
-        expected_count_results = (
-            count if count < recipes_len else recipes_len
+        response: Response = api_client.get(url)
+        self.url_get_resource(
+            response=response,
+            url=url,
+            response_schema=RESPONSE_SCHEMA_RECIPES
         )
-        assert response_results_len == expected_count_results, (
-            'Убедитесь, что работает пагинация. Получили '
-            f'{response_results_len} объектов, ожидали '
-            f'{expected_count_results}.'
+        self.url_pagination_results(
+            data=response.json(),
+            limit=count
         )
 
     @pytest.mark.parametrize(
@@ -284,44 +223,45 @@ class TestRecipe:
             lazy_fixture('third_user')
         ]
     )
+    @pytest.mark.usefixtures('all_recipes')
     def test_get_recipes_filter_by_author(
-        self, api_client, all_recipes, settings, user
+        self, api_client: APIClient, settings: SettingsWrapper, user: Model
     ):
-        # Интересно, а надо ли фильтр проверить, что именно число?..
         url = URL_RECIPES + '?author=' + str(user.id)
-        response_json = api_client.get(url).json().get('results')
-        recipe_count = Recipe.objects.filter(
-            author_id=user.id
-        ).distinct().count()
-        page_size = settings.REST_FRAMEWORK.get("PAGE_SIZE", None)
-        expected_count_results = (
-            recipe_count if recipe_count < page_size else page_size
+        response: Response = api_client.get(url)
+        self.url_get_resource(
+            response=response,
+            url=url,
+            response_schema=RESPONSE_SCHEMA_RECIPES
         )
-        assert expected_count_results == len(response_json), (
-            f'Убедитесь, что по адресу `{URL_RECIPES}` работает '
-            'фильтрация по полю author.'
+        self.url_filters_by_query_parameters(
+            response=response,
+            model=Recipe,
+            filters={'author_id': user.id},
+            limit=settings.REST_FRAMEWORK.get("PAGE_SIZE", 10)
         )
 
     @pytest.mark.parametrize(
         'count_tags, slug_list', TAG_SET_SLUGS.items()
     )
+    @pytest.mark.usefixtures('all_recipes', 'count_tags')
     def test_get_recipes_filter_by_tags(
-        self, api_client, all_recipes, settings, count_tags, slug_list
+        self, api_client: APIClient, settings: SettingsWrapper, slug_list: list
     ):
         url = URL_RECIPES + '?' + '&'.join(
             [f'tags={slug}' for slug in slug_list]
         )
-        response_json = api_client.get(url).json().get('results')
-        recipe_count = Recipe.objects.filter(
-            tags__slug__in=slug_list
-        ).distinct().count()
-        page_size = settings.REST_FRAMEWORK.get("PAGE_SIZE", None)
-        expected_count_results = (
-            recipe_count if recipe_count < page_size else page_size
+        response: Response = api_client.get(url)
+        self.url_get_resource(
+            response=response,
+            url=url,
+            response_schema=RESPONSE_SCHEMA_RECIPES
         )
-        assert expected_count_results == len(response_json), (
-            f'Убедитесь, что по адресу `{URL_RECIPES}` работает '
-            'фильтрация по полю author.'
+        self.url_filters_by_query_parameters(
+            response=response,
+            model=Recipe,
+            filters={'tags__slug__in': slug_list},
+            limit=settings.REST_FRAMEWORK.get("PAGE_SIZE", 10)
         )
 
     @pytest.mark.parametrize(
@@ -331,27 +271,13 @@ class TestRecipe:
         ]
     )
     def test_get_recipe_detail(
-        self, first_recipe, client
+        self, client: APIClient, first_recipe: Model
     ):
-        url = URL_GET_RECIPE.format(id=first_recipe.id)
-        response = client.get(url)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
+        self.url_get_resource(
+            client=client,
+            url=URL_GET_RECIPE.format(id=first_recipe.id),
+            response_schema=RESPONSE_SCHEMA_RECIPE
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=url)
-        )
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEME_RECIPE
-        ), RESPONSE_PAGINATED_STRUCTURE
-        for field, scheme in SCHEME_RECIPE_FIELDS.items():
-            assert validate_response_scheme(
-                response_json.get(field)[0], scheme
-            ), RESPONSE_PAGINATED_STRUCTURE
-        assert validate_response_scheme(
-            response_json.get('author'), SCHEME_USER
-        ), RESPONSE_PAGINATED_STRUCTURE
 
     @pytest.mark.parametrize(
         'client', [
@@ -367,18 +293,17 @@ class TestRecipe:
         ]
     )
     def test_get_short_link(
-        self, recipe, client
+        self, client: APIClient, recipe: Model
     ):
         url = URL_GET_SHORT_LINK.format(id=recipe.id)
-        response = client.get(url)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
+        response: Response = client.get(url)
+        self.url_get_resource(
+            response=response,
+            url=url,
+            response_schema=RESPONSE_SCHEMA_SHORT_LINK
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_CREATED_ERROR.format(method='patch', url=url)
-        )
-        response_json = response.json()
-        short_link = response_json.get('short-link', '')
+        response_json: dict = response.json()
+        short_link: str = response_json.get('short-link', '')
         pattern = r'^.*/s/[a-zA-Z0-9]{2,6}$'
         assert re.match(pattern, short_link) is not None, (
             'Убедитесь, что в ответе запроса на адрес `{url}` значение '
@@ -399,26 +324,17 @@ class TestRecipe:
         ]
     )
     def test_redirect_short_link(
-        self, recipe, client
+        self, client: APIClient, recipe: Model
     ):
-        url = URL_SHORT_LINK.format(uuid=recipe.short_link)
-        response = client.get(url)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
-        )
-        assert response.status_code == HTTPStatus.FOUND, (
-            URL_FOUND_ERROR.format(method='patch', url=url)
-        )
-        redirect_url = response.headers.get('Location')
-        expected_redirect_url = URL_GET_RECIPE.format(id=recipe.id)
-        assert redirect_url == expected_redirect_url, (
-            f'Проверьте, что адрес `{url}` перенаправляет на '
-            f'`{expected_redirect_url}`. На текущий момент перенаправляет на '
-            f'`{redirect_url}`.'
+        self.url_redirects_with_found_status(
+            client=client,
+            url=URL_SHORT_LINK.format(uuid=recipe.short_link),
+            expected_redirect_url=URL_GET_RECIPE.format(id=recipe.id)
         )
 
-    def test_update_recipe_author(
-        self, second_user_authorized_client, first_recipe, tags, ingredients
+    def test_update_recipe_author(  # TODO: Возможно, вынести часть логики
+        self, second_user_authorized_client: APIClient, first_recipe: Model,
+        tags: list, ingredients: list
     ):
         url = URL_GET_RECIPE.format(id=first_recipe.id)
         # Из-за боли с транзакциями делаем немного махинаций
@@ -429,25 +345,13 @@ class TestRecipe:
         for ingredient in body['ingredients']:
             ingredient['id'] = ingredients[ingredient['id']].id
 
-        response = second_user_authorized_client.patch(url, body)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
+        response: Response = second_user_authorized_client.patch(url, body)
+
+        self.url_get_resource(
+            response=response,
+            url=url,
+            response_schema=RESPONSE_SCHEMA_RECIPE
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_CREATED_ERROR.format(method='patch', url=url)
-        )
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEME_RECIPE
-        ), RESPONSE_PAGINATED_STRUCTURE
-        # Для ингров и тегов - списки.
-        for field, scheme in SCHEME_RECIPE_FIELDS.items():
-            assert validate_response_scheme(
-                response_json.get(field)[0], scheme
-            ), RESPONSE_PAGINATED_STRUCTURE
-        assert validate_response_scheme(
-            response_json.get('author'), SCHEME_USER
-        ), RESPONSE_PAGINATED_STRUCTURE
 
         recipes = Recipe.objects.filter(
             name=body.get('name'),
@@ -485,154 +389,125 @@ class TestRecipe:
             'обновленные записи'
         )
 
-    def test_get_recipes_with_is_in_shopping_cart_param_authorized(
-        self, third_user_authorized_client, third_user, three_shopping_cart
+    @pytest.mark.parametrize(
+        'user_status, client',
+        [
+            ('anonymous', lazy_fixture('api_client')),
+            ('authorized', lazy_fixture('third_user_authorized_client'))
+        ]
+    )
+    @pytest.mark.parametrize(
+        'flag', [0, 1]
+    )
+    @pytest.mark.parametrize(
+        'Model, flag_name',
+        [
+            (ShoppingCart, 'is_in_shopping_cart'),
+            (RecipeFavorite, 'is_favorited')
+        ]
+    )
+    def test_get_recipes_with_flag(
+        self, client: APIClient, third_user: Model, flag: int,
+        user_status: str, Model: Model, flag_name: str
     ):
-        url = URL_RECIPES + '?is_in_shopping_cart=1'
-        response = third_user_authorized_client.get(url)
-        response_json = response.json()
-        response_count = response_json['count']
-        recipe_in_response = {
-            recipe['id'] for recipe in response_json['results']
-        }
-        recipe_in_DB = {
-            cart.id for cart in ShoppingCart.objects.filter(author=third_user)
-        }
-        assert (
-            response_count == len(recipe_in_response)
-            and recipe_in_response == recipe_in_DB
-        ), (
-            'Убедитесь, что фильтр is_in_shopping_cart на странице рецептов '
-            'работает.'
+        url = URL_RECIPES + f'?{flag_name}={flag}'
+        response: Response = client.get(url)
+        self.url_get_resource(
+            response=response,
+            url=url,
+            response_schema=RESPONSE_SCHEMA_RECIPES
         )
-
-    def test_get_recipes_with_is_not_in_shopping_cart_param_authorized(
-        self, third_user_authorized_client, third_user, three_shopping_cart
-    ):
-        url = URL_RECIPES + '?is_in_shopping_cart=0'
-        response = third_user_authorized_client.get(url)
-        response_json = response.json()
-        response_count = response_json['count']
-        recipe_in_response = {
-            recipe['id'] for recipe in response_json['results']
-        }
-        recipe_in_DB = {
-            cart.id for cart in ShoppingCart.objects.filter(author=third_user)
-        }
-        assert (
-            response_count == len(recipe_in_response)
-            and len(recipe_in_response.intersection(recipe_in_DB)) == 0
-        ), (
-            'Убедитесь, что фильтр is_in_shopping_cart на странице рецептов '
-            'работает.'
-        )
-
-    def test_get_recipes_with_is_in_shopping_cart_param_unauthorized(
-        self, api_client, three_shopping_cart
-    ):
-        url = URL_RECIPES + '?is_in_shopping_cart=1'
-        response = api_client.get(url)
-        response_json = response.json()
-        response_count = response_json['count']
-        response_results = response_json['results']
-        assert response_count == 0 == len(response_results), (
-            'Убедитесь, что для неавторизованного вернётся пустой список.'
-        )
-
-    def test_get_recipes_with_is_not_in_shopping_cart_param_unauthorized(
-        self, api_client, three_shopping_cart
-    ):
-        url = URL_RECIPES + '?is_in_shopping_cart=0'
-        response = api_client.get(url)
-        response_json = response.json()
-        response_count = response_json['count']
-        recipe_in_response = {
-            recipe['id'] for recipe in response_json['results']
-        }
-        recipe_in_DB = {
-            cart.id for cart in Recipe.objects.all()
-        }
-        assert (
-            len(recipe_in_DB) == response_count
-            and recipe_in_response == recipe_in_DB
-        ), (
-            'Для неавторизованного пользователя должны вернуться все рецепты'
-        )
-
-    def test_get_recipes_with_is_favorited_param_authorized(
-        self, third_user_authorized_client, third_user, three_shopping_cart
-    ):
-        url = URL_RECIPES + '?is_favorited=1'
-        response = third_user_authorized_client.get(url)
-        response_json = response.json()
-        response_count = response_json['count']
-        recipe_in_response = {
-            recipe['id'] for recipe in response_json['results']
-        }
-        recipe_in_DB = {
-            cart.id for cart in RecipeFavorite.objects.filter(
-                author=third_user
+        response_json: dict = response.json()
+        response_count: int = response_json['count']
+        if flag == 1 and user_status == 'anonymous':
+            response_results = response_json['results']
+            assert response_count == 0 == len(response_results), (
+                'Убедитесь, что для неавторизованного вернётся пустой список.'
             )
-        }
-        assert (
-            response_count == len(recipe_in_response)
-            and recipe_in_response == recipe_in_DB
-        ), (
-            'Убедитесь, что фильтр is_in_shopping_cart на странице рецептов '
-            'работает.'
+        else:
+            recipe_in_response = {
+                recipe['id'] for recipe in response_json['results']
+            }
+            if user_status == 'anonymous':
+                recipe_in_DB = {
+                    cart.id for cart in Recipe.objects.all()
+                }
+                assert (
+                    len(recipe_in_DB) == response_count
+                    and recipe_in_response == recipe_in_DB
+                ), (
+                    'Для неавторизованного пользователя должны вернуться '
+                    'все рецепты'
+                )
+            else:
+                recipe_in_DB = {
+                    cart.id for cart in Model.objects.filter(
+                        author=third_user
+                    )
+                }
+                if flag:
+                    assert (
+                        response_count == len(recipe_in_response)
+                        and recipe_in_response == recipe_in_DB
+                    ), (
+                        f'Убедитесь, что фильтр `{flag_name}` на '
+                        'странице рецептов работает.'
+                    )
+                else:
+                    assert (
+                        response_count == len(recipe_in_response)
+                        and len(
+                            recipe_in_response.intersection(recipe_in_DB)
+                        ) == 0
+                    ), (
+                        f'Убедитесь, что фильтр `{flag_name}` на '
+                        'странице рецептов работает.'
+                    )
+
+    def test_delete_recipe_unauthorized(
+        self, api_client: APIClient, first_recipe: Model
+    ):
+        id_recipe: int = first_recipe.id
+        self.url_requires_authorization(
+            client=api_client,
+            url=URL_GET_RECIPE.format(id=id_recipe),
+            method='delete'
         )
 
-    def test_get_recipes_with_is_unfavorited_param_authorized(
-        self, third_user_authorized_client, third_user, three_shopping_cart
+    def test_delete_not_added_from_recipe(
+        self, first_user_authorized_client: APIClient, first_recipe: Model
     ):
-        url = URL_RECIPES + '?is_favorited=0'
-        response = third_user_authorized_client.get(url)
-        response_json = response.json()
-        response_count = response_json['count']
-        recipe_in_response = {
-            recipe['id'] for recipe in response_json['results']
-        }
-        recipe_in_DB = {
-            cart.id for cart in RecipeFavorite.objects.filter(
-                author=third_user
-            )
-        }
-        assert (
-            response_count == len(recipe_in_response)
-            and len(recipe_in_response.intersection(recipe_in_DB)) == 0
-        ), (
-            'Убедитесь, что фильтр is_in_shopping_cart на странице рецептов '
-            'работает.'
+        id_recipe: int = first_recipe.id
+        self.url_access_denied(
+            client=first_user_authorized_client,
+            url=URL_GET_RECIPE.format(id=id_recipe),
+            method='delete'
         )
 
-    def test_get_recipes_with_is_favorited_param_unauthorized(
-        self, api_client, three_shopping_cart
+    def test_delete_non_existing_recipe(
+        self, second_user_authorized_client: APIClient
     ):
-        url = URL_RECIPES + '?is_favorited=1'
-        response = api_client.get(url)
-        response_json = response.json()
-        response_count = response_json['count']
-        response_results = response_json['results']
-        assert response_count == 0 == len(response_results), (
-            'Убедитесь, что для неавторизованного вернётся пустой список.'
+        self.url_is_missing_for_method(
+            client=second_user_authorized_client,
+            url=URL_GET_RECIPE.format(id=NOT_EXISTING_ID),
+            method='delete'
         )
 
-    def test_get_recipes_with_is_unfavorited_param_unauthorized(
-        self, api_client, three_shopping_cart
+    def test_delete_recipe(
+        self, second_user_authorized_client: APIClient, first_recipe: Model
     ):
-        url = URL_RECIPES + '?is_favorited=0'
-        response = api_client.get(url)
-        response_json = response.json()
-        response_count = response_json['count']
-        recipe_in_response = {
-            recipe['id'] for recipe in response_json['results']
-        }
-        recipe_in_DB = {
-            cart.id for cart in Recipe.objects.all()
-        }
+        id_recipe: int = first_recipe.id
+        self.url_delete_resouce(
+            client=second_user_authorized_client,
+            url=URL_GET_RECIPE.format(id=id_recipe),
+            model=Recipe,
+            item_id=id_recipe
+        )
+        assert not RecipeTags.objects.filter(recipe_id=first_recipe.id), (
+            'Убедитесь, что удалились связанные с рецептом теги.'
+        )
         assert (
-            len(recipe_in_DB) == response_count
-            and recipe_in_response == recipe_in_DB
+            not RecipeIngredients.objects.filter(recipe_id=first_recipe.id)
         ), (
-            'Для неавторизованного пользователя должны вернуться все рецепты'
+            'Убедитесь, что удалились связанные с рецептом ингредиенты.'
         )

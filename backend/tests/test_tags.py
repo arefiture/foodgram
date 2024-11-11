@@ -1,16 +1,11 @@
-from http import HTTPStatus
-
 import pytest
+from rest_framework.test import APIClient
 
-from tests.utils.general import (
-    RESPONSE_PAGINATED_STRUCTURE,
-    URL_METHOD_NOT_ALLOWED,
-    URL_NOT_FOUND_ERROR,
-    URL_OK_ERROR,
-    validate_response_scheme,
-)
+from tests.base_test import BaseTest
+from tests.utils.general import NOT_EXISTING_ID
 from tests.utils.tag import (
-    SCHEME_TAG,
+    RESPONSE_SCHEMA_TAG,
+    RESPONSE_SCHEMA_TAGS,
     URL_GET_TAG,
     URL_TAGS,
     DENY_CHANGE_METHOD
@@ -18,18 +13,20 @@ from tests.utils.tag import (
 
 
 @pytest.mark.django_db(transaction=True)
-class TestTags:
+class TestTags(BaseTest):
 
     @pytest.mark.parametrize(
         'method, method_info', DENY_CHANGE_METHOD.items()
     )
+    @pytest.mark.usefixtures('tags')
     def test_bad_request_methods(
-        self, first_user_authorized_client, tags, method, method_info
+        self, first_user_authorized_client: APIClient, method: str,
+        method_info: dict
     ):
-        url = method_info['url']
-        response = getattr(first_user_authorized_client, method)(url)
-        assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED, (
-            URL_METHOD_NOT_ALLOWED.format(method=method.upper(), url=url)
+        self.url_is_not_allowed_for_method(
+            client=first_user_authorized_client,
+            url=method_info['url'],
+            method=method
         )
 
     @pytest.mark.parametrize(
@@ -37,45 +34,30 @@ class TestTags:
         ['api_client', 'first_user_authorized_client'],
         indirect=True
     )
-    def test_get_tags(
-        self, client, tags
-    ):
-        response = client.get(URL_TAGS)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_TAGS)
+    @pytest.mark.usefixtures('tags')
+    def test_get_tags(self, client: APIClient):
+        self.url_get_resource(
+            client=client,
+            url=URL_TAGS,
+            response_schema=RESPONSE_SCHEMA_TAGS
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=URL_TAGS)
-        )
-        response_json = response.json()
-        assert isinstance(response_json, list) and validate_response_scheme(
-            response_json[0], SCHEME_TAG
-        ), RESPONSE_PAGINATED_STRUCTURE
 
     @pytest.mark.parametrize(
         'client',
         ['api_client', 'first_user_authorized_client'],
         indirect=True
     )
-    def test_get_tag_detail(self, client, tags):
-        id_tag = tags[0].id
-        url = URL_GET_TAG.format(id=id_tag)
-        response = client.get(url)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
+    def test_get_tag_detail(self, client: APIClient, tags: list):
+        self.url_get_resource(
+            client=client,
+            url=URL_GET_TAG.format(id=tags[0].id),
+            response_schema=RESPONSE_SCHEMA_TAG
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=url)
-        )
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEME_TAG
-        ), RESPONSE_PAGINATED_STRUCTURE
 
-    def test_non_existing_tag(self, client, tags):
-        id_tag = max(tag.id for tag in tags)
-        url = URL_GET_TAG.format(id=id_tag + 1)
-        response = client.get(url)
-        assert response.status_code == HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
+    @pytest.mark.usefixtures('tags')
+    def test_non_existing_tag(self, first_user_authorized_client: APIClient):
+        self.url_is_missing_for_method(
+            client=first_user_authorized_client,
+            url=URL_GET_TAG.format(id=NOT_EXISTING_ID),
+            method='get'
         )

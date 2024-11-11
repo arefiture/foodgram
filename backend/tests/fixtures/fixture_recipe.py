@@ -1,13 +1,17 @@
 import pytest
 
-from api.models import (
-    Recipe,
-    RecipeIngredients,
-    RecipeTags
+from tests.utils.models import (
+    recipe_model,
+    recipe_ingredients_model,
+    recipe_tags_model
 )
 from tests.utils.recipe import (
     IMAGE
 )
+
+Recipe = recipe_model()
+RecipeIngredients = recipe_ingredients_model()
+RecipeTags = recipe_tags_model()
 
 
 def create_recipe(data: dict):

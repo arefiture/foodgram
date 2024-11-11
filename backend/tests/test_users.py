@@ -1,24 +1,27 @@
 import re
+from functools import wraps
 from http import HTTPStatus
 
 import pytest
+from django.contrib.auth import get_user_model
+from django.db.models import Model
+from pytest_lazyfixture import lazy_fixture
+from rest_framework.response import Response
+from rest_framework.test import APIClient
 
+from tests.base_test import BaseTest
 from tests.utils.general import (
+    NOT_EXISTING_ID,
     RESPONSE_EXPECTED_STRUCTURE,
-    RESPONSE_PAGINATED_STRUCTURE,
-    SCHEMA_PAGINATE,
-    URL_NO_CONTENT_ERROR,
-    URL_NOT_FOUND_ERROR,
-    URL_OK_ERROR,
-    URL_UNAUTHORIZED_ERROR,
-    validate_response_scheme,
+    URL_OK_ERROR
 )
 from tests.utils.user import (
     AVATAR,
     FIRST_VALID_USER,
     NEW_PASSWORD,
-    SCHEMA_ADDED_AVATAR,
-    SCHEME_USER,
+    RESPONSE_SCHEMA_AVATAR,
+    RESPONSE_SCHEMA_USER,
+    RESPONSE_SCHEMA_USERS,
     URL_AVATAR,
     URL_CREATE_USER,
     URL_GET_USER,
@@ -27,9 +30,11 @@ from tests.utils.user import (
     URL_SET_PASSWORD,
 )
 
+User = get_user_model()
+
 
 @pytest.mark.django_db(transaction=True)
-class TestUsers:
+class TestUsers(BaseTest):
     UNAUTHORIZED_BANNED_METHODS = {
         'post_me': {'url': URL_ME, 'method': 'post'},
         'put_avatar': {'url': URL_AVATAR, 'method': 'put'},
@@ -40,47 +45,33 @@ class TestUsers:
     @pytest.mark.parametrize(
         'method_name, data', UNAUTHORIZED_BANNED_METHODS.items()
     )
-    def test_bad_request_unauthorized(self, api_client, method_name, data):
-        url = data['url']
-        response = getattr(api_client, data['method'])(url)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
-        )
-        assert response.status_code == HTTPStatus.UNAUTHORIZED, (
-            URL_UNAUTHORIZED_ERROR.format(url=url)
+    @pytest.mark.usefixtures('method_name')
+    def test_bad_request_unauthorized(self, api_client: APIClient, data: dict):
+        self.url_requires_authorization(
+            client=api_client,
+            url=data['url'],
+            method=data['method']
         )
 
-    def test_non_existing_profile(
-        self, api_client, django_user_model, all_user
-    ):
-        max_id = max(element.id for element in django_user_model.objects.all())
-        response = api_client.get(URL_GET_USER.format(id=max_id + 1))
-        assert response.status_code == HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_GET_USER)
+    @pytest.mark.usefixtures('all_user')
+    def test_non_existing_profile(self, api_client: APIClient):
+        self.url_is_missing_for_method(
+            client=api_client,
+            url=api_client.get(URL_GET_USER.format(id=NOT_EXISTING_ID)),
+            method='get'
         )
 
+    @pytest.mark.usefixtures('first_user')
     def test_reset_password_wrong_data(
-        self, first_user_authorized_client, first_user, django_user_model
+        self, first_user_authorized_client: APIClient
     ):
-        old_password = first_user.password
-        response = first_user_authorized_client.post(URL_SET_PASSWORD, {
-            'current_password': 'wrongPassword',
-            'new_password': NEW_PASSWORD
-        })
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_SET_PASSWORD)
-        )
-        invalid_field = 'current_password'
-        response_json = response.json()
-        assert (invalid_field in response_json
-                and isinstance(response_json.get(invalid_field), list)), (
-            f'Если в POST-метод к `{URL_SET_PASSWORD}` передан неверный '
-            'пароль, в ответе должна быть соответствующая информация.'
-        )
-        assert (old_password == django_user_model
-                .objects.get(id=first_user.id).password), (
-            'Убедитесь, что при неверном текущем пароле данные в БД '
-            'будут без изменений.'
+        self.url_bad_request_for_invalid_data(
+            client=first_user_authorized_client,
+            url=URL_SET_PASSWORD,
+            data={
+                'current_password': 'wrongPassword',
+                'new_password': NEW_PASSWORD
+            }
         )
 
     @pytest.mark.parametrize(
@@ -88,176 +79,146 @@ class TestUsers:
         ['api_client', 'first_user_authorized_client'],
         indirect=True
     )
-    def test_get_users(self, client, all_user):
-        response = client.get(URL_CREATE_USER)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_CREATE_USER)
+    @pytest.mark.usefixtures('all_user')
+    def test_get_users(self, client: APIClient):
+        self.url_get_resource(
+            client=client,
+            url=URL_CREATE_USER,
+            response_schema=RESPONSE_SCHEMA_USERS
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=URL_CREATE_USER)
-        )
-
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEMA_PAGINATE
-        ), RESPONSE_PAGINATED_STRUCTURE
-        response_count = response_json['count']
-        assert len(all_user) == response_count, (
-            'Убедитесь, что в count ответа приходит число всех записей, '
-            'существующих в БД.'
-        )
-
-        response_results_json = response_json.get('results')
-        assert validate_response_scheme(
-            response_results_json[0], SCHEME_USER
-        ), RESPONSE_EXPECTED_STRUCTURE
 
     @pytest.mark.parametrize(
         'client',
         ['api_client', 'first_user_authorized_client'],
         indirect=True
     )
-    def test_get_user_detail(self, client, all_user):
-        user_id = all_user[0].id
-        url = URL_GET_USER.format(id=user_id)
-        response = client.get(url)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=url)
+    def test_get_user_detail(self, client: APIClient, first_user: Model):
+        self.url_get_resource(
+            client=client,
+            url=URL_GET_USER.format(id=first_user.id),
+            response_schema=RESPONSE_SCHEMA_USER
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=url)
-        )
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEME_USER
-        ), RESPONSE_EXPECTED_STRUCTURE
 
     @pytest.mark.parametrize('limit', [1, 999999])
+    @pytest.mark.usefixtures('all_user')
     def test_get_users_paginated(
-        self, first_user_authorized_client, all_user, limit
+        self, first_user_authorized_client: APIClient, limit: int
     ):
-        # Структура и доступность проверялись выше
         url = URL_CREATE_USER + '?limit=' + str(limit)
-        response = first_user_authorized_client.get(url)
-        response_json = response.json()
-        count_db = response_json['count']
-        count_results = len(response_json['results'])
-        if count_db <= limit:
-            assert count_db == count_results, (
-                'При count <= limit требуется отобразить все записи.'
-            )
-        else:
-            assert limit == count_results, (
-                f'Должно отобразиться {limit} элементов, отобразилось '
-                f'{count_results} элементов.'
-            )
+        response: Response = first_user_authorized_client.get(url)
+        self.url_get_resource(
+            response=response,
+            url=url,
+            response_schema=RESPONSE_SCHEMA_USERS
+        )
+        self.url_pagination_results(data=response.json(), limit=limit)
 
     def test_get_users_me(
-        self, first_user_authorized_client, all_user
+        self, first_user_authorized_client: APIClient, first_user: Model
     ):
-        response = first_user_authorized_client.get(URL_ME)
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_ME)
+        response: Response = first_user_authorized_client.get(URL_ME)
+        self.url_get_resource(
+            response=response,
+            url=URL_ME,
+            response_schema=RESPONSE_SCHEMA_USER
         )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=URL_ME)
-        )
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEME_USER
-        ), RESPONSE_EXPECTED_STRUCTURE
-        is_subscribed = response_json['is_subscribed']
-        assert not is_subscribed, (
-            f'Для {URL_ME} ожидалось, что is_subscribed будет False. '
-            f'Получено значение {is_subscribed}.'
-        )
+        response_json: dict = response.json()
+        avatar: str = response_json.get('avatar')
+        avatar_db: str = User.objects.get(id=first_user.id).avatar.name
+        if avatar_db:
+            assert avatar is not None, (
+                'Убедитесь, что в ответе поле `avatar` не пустое.'
+            )
+            pattern_avatar = (
+                r'^https?://[a-zA-Z0-9.-]+/media/users/[\w-]+\.(jpeg|png)$'
+            )
+            assert bool(re.match(pattern_avatar, avatar)), (
+                RESPONSE_EXPECTED_STRUCTURE
+            )
+        else:
+            assert avatar is None, (
+                'Убедитесь, что после корректного запроса на удаление аватара '
+                'в ответе на запрос к данным пользователя в поле `avatar` '
+                'вернётся `null` или пустая строка.'
+            )
 
+    def check_avatar_update(action_func):
+        @wraps(action_func)
+        def wrapper(
+            self, client: APIClient, user: Model, *args, **kwargs
+        ):
+            old_item = User.objects.get(id=user.id).avatar
+            action_func(  # Тут либо изменение, либо удаление аватара
+                self, client, user, *args, **kwargs
+            )
+            new_item = User.objects.get(id=user.id).avatar
+            assert old_item != new_item, (
+                f'Поле {"avatar"} в БД должно обновиться.'
+            )
+        return wrapper
+
+    @check_avatar_update
+    @pytest.mark.parametrize(
+        'client, user',
+        [(
+            lazy_fixture('first_user_authorized_client'),
+            lazy_fixture('first_user')
+        )]
+    )
     def test_put_users_me_avatar(
-        self, first_user_authorized_client, first_user, django_user_model
+        self, client: APIClient, user: Model
     ):
-        old_avatar = (
-            django_user_model.objects.get(id=first_user.id).avatar.name
+        response: Response = client.put(
+            URL_AVATAR, {'avatar': AVATAR}
         )
-        response = first_user_authorized_client.put(URL_AVATAR, {
-            'avatar': AVATAR
-        })
-        new_avatar = (
-            django_user_model.objects.get(id=first_user.id).avatar.name
+        self.url_get_resource(
+            response=response,
+            url=URL_AVATAR,
+            response_schema=RESPONSE_SCHEMA_AVATAR
         )
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_AVATAR)
-        )
-        assert response.status_code == HTTPStatus.OK, (
-            URL_OK_ERROR.format(url=URL_AVATAR)
-        )
-        assert old_avatar != new_avatar, (
-            'Поле avatar в БД должно обновиться.'
-        )
-        response_json = response.json()
-        assert validate_response_scheme(
-            response_json, SCHEMA_ADDED_AVATAR
-        ), RESPONSE_EXPECTED_STRUCTURE
+        # Сразу же проверка на корректное отображение
+        self.test_get_users_me(client, user)
 
-        response = first_user_authorized_client.get(URL_ME)
-        avatar_url = response_json.get('avatar')
-        assert avatar_url is not None, (
-            'После добавления аватара должна возвращаться ссылка на него.'
-        )
-        pattern_avatar = r'^https?://[a-zA-Z0-9.-]+/media/users/[\w-]+\.png$'
-        assert bool(re.match(pattern_avatar, avatar_url)), (
-            RESPONSE_EXPECTED_STRUCTURE
-        )
-
+    @check_avatar_update
+    @pytest.mark.parametrize(
+        'client, user',
+        [(
+            lazy_fixture('second_user_authorized_client'),
+            lazy_fixture('second_user')
+        )]
+    )
     def test_delete_me_avatar_authorized(
-        self, second_user_authorized_client, second_user, django_user_model
+        self, client: APIClient, user: Model
     ):
-        old_avatar = (
-            django_user_model.objects.get(id=second_user.id).avatar.name
+        response: Response = client.delete(URL_AVATAR)
+        self.url_returns_no_content(
+            response=response,
+            url=URL_AVATAR
         )
-        response = second_user_authorized_client.delete(URL_AVATAR)
-        new_avatar = (
-            django_user_model.objects.get(id=second_user.id).avatar.name
-        )
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_AVATAR)
-        )
-        assert response.status_code == HTTPStatus.NO_CONTENT, (
-            URL_NO_CONTENT_ERROR.format(url=URL_AVATAR)
-        )
-        assert old_avatar != new_avatar, (
-            'Поле avatar в БД должно стать пустым.'
-        )
-
-        response = second_user_authorized_client.get(URL_ME)
-        response_json = response.json()
-        avatar_url = response_json.get('avatar')
-        assert avatar_url is None, (
-            'Убедитесь, что после корректного запроса на удаление аватара в '
-            'ответе на запрос к данным пользователя в поле `avatar` вернётся '
-            '`null` или пустая строка'
-        )
+        # Сразу же проверка на корректное отображение
+        self.test_get_users_me(client, user)
 
     def test_reset_password(
-        self, first_user_authorized_client, first_user, django_user_model
+        self, first_user_authorized_client: APIClient, first_user: Model
     ):
-        old_password = first_user.password
-        response = first_user_authorized_client.post(URL_SET_PASSWORD, {
-            'current_password': FIRST_VALID_USER['password'],
-            'new_password': NEW_PASSWORD
-        })
-        assert response.status_code != HTTPStatus.NOT_FOUND, (
-            URL_NOT_FOUND_ERROR.format(url=URL_AVATAR)
+        old_password = User.objects.get(id=first_user.id).password
+        response: Response = first_user_authorized_client.post(
+            URL_SET_PASSWORD, {
+                'current_password': FIRST_VALID_USER['password'],
+                'new_password': NEW_PASSWORD
+            }
         )
-        assert response.status_code == HTTPStatus.NO_CONTENT, (
-            URL_NO_CONTENT_ERROR.format(url=URL_AVATAR)
+        self.url_returns_no_content(
+            response=response,
+            url=URL_SET_PASSWORD
         )
-        assert (old_password != django_user_model
-                .objects.get(id=first_user.id).password), (
+        assert (old_password != User.objects.get(id=first_user.id).password), (
             'Убедитесь, что при корректном текущем пароле данные в БД '
             'будут изменены.'
         )
 
-        response = first_user_authorized_client.post(URL_LOGIN, {
+        # Проверка, что по измененным данным можно войти
+        response: Response = first_user_authorized_client.post(URL_LOGIN, {
             'password': NEW_PASSWORD,
             'email': first_user.email
         })

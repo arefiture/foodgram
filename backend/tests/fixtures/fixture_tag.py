@@ -1,7 +1,9 @@
 import pytest
 
-from api.models.tag import Tag
+from tests.utils.models import tag_model
 from tests.utils.tag import TAG_DATA
+
+Tag = tag_model()
 
 
 @pytest.fixture

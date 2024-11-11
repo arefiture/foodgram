@@ -29,7 +29,7 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
         detail=False,
         url_path='me/avatar',
         name='set_avatar',
-        permission_classes=[CurrentUserOrAdmin]
+        permission_classes=[CurrentUserOrAdmin]  # TODO а чу тут админ?
     )
     def avatar(self, request, *args, **kwargs):
         if 'avatar' not in request.data:

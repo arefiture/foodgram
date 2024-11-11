@@ -26,8 +26,18 @@ DENY_CHANGE_METHOD = installation_method_urls(
 )
 
 # Схемы валидации данных в ответах методов
-SCHEME_INGREDIENT = {
-    'id': (int, ),
-    'name': (str, ),
-    'measurement_unit': (str, )
+RESPONSE_SCHEMA_INGREDIENT = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "number"},
+        "name": {"type": "string"},
+        "measurement_unit": {"type": "string"},
+    },
+    "required": ["id", "name", "measurement_unit"],
+    "additionalProperties": False
+}
+
+RESPONSE_SCHEMA_INGREDIENTS = {
+    "type": "array",
+    "items": RESPONSE_SCHEMA_INGREDIENT
 }

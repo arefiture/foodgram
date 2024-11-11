@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from djoser.permissions import CurrentUserOrAdmin
 from rest_framework.decorators import action
 
 from core.utils import object_update_or_delete
@@ -23,7 +24,12 @@ class SubscriptionMixin:
         )
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True, methods=('POST', 'DELETE'), url_path='subscribe')
+    @action(
+        detail=True,
+        methods=('POST', 'DELETE'),
+        url_path='subscribe',
+        permission_classes=[CurrentUserOrAdmin]
+    )
     def subscribe(self, request, id):
         data = {
             'user': request.user,
