@@ -1,8 +1,8 @@
 from djoser import views as djoser_views
-from djoser.permissions import CurrentUserOrAdmin
 from rest_framework import status, response
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 
 from users.models import User
 from users.serializers import AvatarSerializer, UserSerializer
@@ -19,7 +19,7 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
         ["GET", "PUT", "PATCH", "DELETE"],
         detail=False,
         # TODO: Возможно, стоит сделать отдельно perm на isCurrentUser?
-        permission_classes=[CurrentUserOrAdmin]
+        permission_classes=[IsAuthenticated]
     )
     def me(self, request, *args, **kwargs):
         return super().me(request, *args, **kwargs)
@@ -29,7 +29,7 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
         detail=False,
         url_path='me/avatar',
         name='set_avatar',
-        permission_classes=[CurrentUserOrAdmin]  # TODO а чу тут админ?
+        permission_classes=[IsAuthenticated]  # TODO а чу тут админ?
     )
     def avatar(self, request, *args, **kwargs):
         if 'avatar' not in request.data:
