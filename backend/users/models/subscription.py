@@ -13,7 +13,10 @@ class Subscription(AuthBaseModel):
         User, on_delete=models.CASCADE, related_name='users',
         verbose_name='Подписчик'
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата подписки'
+    )
 
     class Meta(AuthBaseModel.Meta):
         constraints = [
@@ -22,8 +25,10 @@ class Subscription(AuthBaseModel):
                 name='unique_author_recipe_user'
             )
         ]
-        verbose_name = 'Подписка'
+        verbose_name = 'подписку'
         verbose_name_plural = 'Подписки'
 
     def __str__(self):
-        return f'{self.author_recipe.__str__()} -> {self.user.__str__()}'
+        return (
+            f'{self.author_recipe.__str__()} подписан на {self.user.__str__()}'
+        )

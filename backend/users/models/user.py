@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils import timezone
 
@@ -34,6 +35,7 @@ class UserManager(BaseUserManager):
         password=None, **extra_fields
     ):
         extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is not True:
@@ -45,7 +47,7 @@ class UserManager(BaseUserManager):
         )
 
 
-class User(AuthBaseModel, AbstractBaseUser):
+class User(AuthBaseModel, AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (
@@ -66,7 +68,7 @@ class User(AuthBaseModel, AbstractBaseUser):
         max_length=LENGTH_CHARFIELD_128
     )
     username = models.CharField(
-        verbose_name='Никнейм пользователя',
+        verbose_name='Никнейм',
         unique=True,
         validators=[UnicodeUsernameValidator()],
         error_messages={
@@ -88,18 +90,18 @@ class User(AuthBaseModel, AbstractBaseUser):
         upload_to=USER_AVATAR_PATH
     )
     is_staff = models.BooleanField(
-        verbose_name='Статус админа',
+        verbose_name='Является админом',
         default=False,
         help_text=(
-            'Определяет, может ли пользователь войти на '
+            'Указывает, может ли пользователь войти на '
             'страницу администратора.'
         ),
     )
     is_active = models.BooleanField(
-        verbose_name='Активность учетной записи',
+        verbose_name='Активная УЗ',
         default=True,
         help_text=(
-            'Определяет, следует ли считать пользователя активным. '
+            'Указывает, следует ли считать пользователя активным. '
             'Уберите флажок вместо удаления учетной записи.'
         ),
     )
@@ -119,23 +121,16 @@ class User(AuthBaseModel, AbstractBaseUser):
     objects = UserManager()
 
     class Meta(AuthBaseModel.Meta):
-        verbose_name = 'Пользователь'
+        verbose_name = 'пользователя'
         verbose_name_plural = 'Пользователи'
         ordering = ['date_joined']
-
-    def __str__(self) -> str:
-        return self.username
-
-    def clean(self):
-        """Валидация объекта перед сохранением в БД."""
-        super().clean()
-        self.email = self.__class__.objects.normalize_email(self.email)
 
     def get_full_name(self) -> str:
         """Возвращает имя и фамилию через разделить (пробел)."""
         full_name = '%s %s' % (self.first_name, self.last_name)
         return full_name.strip()
 
-    def get_short_name(self) -> str:
-        """Возвращает только имя пользователя."""
-        return self.first_name
+    def __str__(self) -> str:
+        return f'[{self.id}] {self.get_full_name()}'
+
+    get_full_name.short_description = 'Полное имя'
