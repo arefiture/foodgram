@@ -18,7 +18,6 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
     @action(
         ["GET", "PUT", "PATCH", "DELETE"],
         detail=False,
-        # TODO: Возможно, стоит сделать отдельно perm на isCurrentUser?
         permission_classes=[IsAuthenticated]
     )
     def me(self, request, *args, **kwargs):
@@ -29,7 +28,7 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
         detail=False,
         url_path='me/avatar',
         name='set_avatar',
-        permission_classes=[IsAuthenticated]  # TODO а чу тут админ?
+        permission_classes=[IsAuthenticated]
     )
     def avatar(self, request, *args, **kwargs):
         if 'avatar' not in request.data:

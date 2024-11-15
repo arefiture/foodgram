@@ -5,7 +5,6 @@ from core.constants import LENGTH_CHARFIELD_64, LENGTH_CHARFIELD_128
 
 
 class Ingredient(CookbookBaseModel):
-    # TODO: Написать manager и management-загрузку
 
     name = models.CharField(
         verbose_name='Наименование ингредиента',
