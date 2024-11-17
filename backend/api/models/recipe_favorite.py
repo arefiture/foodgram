@@ -1,21 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from api.models.abstract_models import CookbookBaseModel
-from api.models.fields import UserForeignKey
-from api.models.recipe import Recipe
+from api.models.abstract_models import BaseActionRecipeModel
 
 
 User = get_user_model()
 
 
-class RecipeFavorite(CookbookBaseModel):
-    author = UserForeignKey(verbose_name='Владелец корзины покупок')
-    recipe = models.ForeignKey(
-        to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
-    )
+class RecipeFavorite(BaseActionRecipeModel):
+    """Модель избранных рецептов."""
 
-    class Meta(CookbookBaseModel.Meta):
+    class Meta(BaseActionRecipeModel.Meta):
         constraints = [
             models.UniqueConstraint(
                 fields=('author', 'recipe'),

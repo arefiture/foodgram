@@ -1,10 +1,11 @@
 from django.db import models
 
-from api.models.abstract_models import CookbookBaseModel
+from api.models.base_models import CookbookBaseModel
 from core.constants import LENGTH_CHARFIELD_64, LENGTH_CHARFIELD_128
 
 
 class Ingredient(CookbookBaseModel):
+    """Модель ингредиентов."""
 
     name = models.CharField(
         verbose_name='Наименование ингредиента',

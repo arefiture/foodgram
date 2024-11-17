@@ -1,11 +1,13 @@
 from django.db import models
 
-from api.models.abstract_models import CookbookBaseModel
+from api.models.base_models import CookbookBaseModel
 from api.models.recipe import Recipe
 from api.models.tag import Tag
 
 
 class RecipeTags(CookbookBaseModel):
+    """Модель связи рецептов и тегов."""
+
     recipe = models.ForeignKey(
         to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
     )

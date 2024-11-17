@@ -4,6 +4,7 @@ from rest_framework.exceptions import ValidationError
 
 
 class UniqueDataInManyFieldValidator:
+    """Валидатор на уникальность сложных полей."""
 
     def __init__(
         self, *, field: str, message: str,

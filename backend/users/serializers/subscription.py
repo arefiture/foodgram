@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.db.models.query import QuerySet
 from rest_framework import serializers
+from rest_framework.request import Request
 from rest_framework.validators import UniqueTogetherValidator
 
 from users.models import Subscription, User
@@ -9,12 +11,14 @@ from users.validators import SubscribeUniqueValidator
 
 def get_base_recipe_serializer():
     """Отложенный импорт сериалайзера для избежания цикличного импорта."""
+
     from api.serializers import BaseRecipeSerializer
     return BaseRecipeSerializer
 
 
 class SubscriptionGetSerializer(serializers.ModelSerializer):
     """Сериалайзер для фолловеров. Только для чтения."""
+
     is_subscribed = serializers.SerializerMethodField(
         method_name='get_is_subscribed'
     )
@@ -33,21 +37,21 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
         )
         read_only_fields = fields
 
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
+    def get_is_subscribed(self, obj: User):
+        request: Request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
         return Subscription.objects.filter(
             user=request.user, author_recipe=obj
         ).exists()
 
-    def get_recipes(self, obj):
-        request = self.context.get('request')
-        recipes_limit = (
+    def get_recipes(self, obj: User):
+        request: Request = self.context.get('request')
+        recipes_limit: int = (
             request.GET.get('recipes_limit') if request
             else settings.RECIPES_LIMIT_MAX
         )
-        queryset = obj.recipes.all()
+        queryset: QuerySet = obj.recipes.all()
         if recipes_limit:
             queryset = queryset[:int(recipes_limit)]
         serializer = get_base_recipe_serializer()
@@ -56,6 +60,7 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
 
 class SubscriptionChangedSerializer(serializers.ModelSerializer):
     """Сериалайзер для фолловеров. Только на запись."""
+
     author_recipe = UserSerializer
     user = UserSerializer
 

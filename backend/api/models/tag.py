@@ -1,10 +1,11 @@
 from django.db import models
 
-from api.models.abstract_models import CookbookBaseModel
+from api.models.base_models import CookbookBaseModel
 from core.constants import LENGTH_CHARFIELD_32
 
 
 class Tag(CookbookBaseModel):
+    """Модель тегов."""
 
     name = models.CharField(
         verbose_name='Наименование тега',

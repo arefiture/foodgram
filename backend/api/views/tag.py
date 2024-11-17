@@ -6,6 +6,8 @@ from api.serializers import TagSerializer
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет для тегов."""
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]

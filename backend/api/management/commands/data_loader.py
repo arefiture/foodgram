@@ -15,9 +15,9 @@ class Command(BaseCommand):
             'type': 'csv'
         },
         {
-            'file_name': 'ingredients',
-            'model': 'api.Ingredient',
-            'fields': ['name', 'measurement_unit'],
+            'file_name': 'tags',
+            'model': 'api.Tag',
+            'fields': ['name', 'slug'],
             'type': 'json'
         }
         # Добавьте другие файлы, если нужно
@@ -83,7 +83,8 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR(f"Ошибка загрузки данных: {e}"))
 
     def load_csv(self, file_path: str, model: models.Model, fields: list):
-        """Обработка CSV-файла"""
+        """Обработка CSV-файла."""
+
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
             for row in reader:
@@ -94,7 +95,8 @@ class Command(BaseCommand):
                 )
 
     def load_json(self, file_path: str, model: models.Model, fields: list):
-        """Обработка JSON-файла"""
+        """Обработка JSON-файла."""
+
         with open(file_path, mode='r', encoding='utf-8') as file:
             data = json.load(file)
             for item in data:

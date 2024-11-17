@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -16,10 +18,15 @@ from users.models.abstract_models import AuthBaseModel
 
 
 class UserManager(BaseUserManager):
+    """
+    Кастомный менеджер пользователей.
+
+    Переопределены create_user и create_superuser.
+    """
 
     def create_user(
-        self, email, username, first_name, last_name,
-        password=None, **extra_fields
+        self, email: str, username: str, first_name: str, last_name: str,
+        password: Optional[str] = None, **extra_fields
     ):
         email = self.normalize_email(email)
         user = self.model(
@@ -31,8 +38,8 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(
-        self, email, username, first_name, last_name,
-        password=None, **extra_fields
+        self, email: str, username: str, first_name: str, last_name: str,
+        password: Optional[str] = None, **extra_fields
     ):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -48,6 +55,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AuthBaseModel, AbstractUser):
+    """Модель пользователя."""
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (

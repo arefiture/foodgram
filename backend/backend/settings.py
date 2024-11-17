@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-f@m+gsvuczn5ozl&2_ps!t4ug*d+3-uss%=k)44y5on$hj0fhd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']  # TODO: адрес добавить перед закидыванием в докер
 
 
 # Application definition

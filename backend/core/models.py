@@ -4,6 +4,7 @@ from core.utils import to_snake_case
 
 
 class PrefixedDBModel(models.Model):
+    """Заготовка для установки префикса пред названием таблиц."""
 
     class Meta:
         abstract = True

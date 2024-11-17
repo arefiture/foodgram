@@ -2,36 +2,38 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from api.models import (
-    Ingredient,
-    Recipe,
-    RecipeFavorite,
-    RecipeIngredients,
-    RecipeTags,
-    Tag
-)
-
-
-class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'measurement_unit')
-    search_fields = ('name',)
-    list_filter = ('measurement_unit',)
-    ordering = ('name',)
+from api.models.recipe import Recipe
+from api.models.recipe_favorite import RecipeFavorite
+from api.models.recipe_ingredients import RecipeIngredients
+from api.models.recipe_tags import RecipeTags
 
 
 class RecipeIngredientInline(admin.TabularInline):
+    """Инлайн-блок управления ингредиентами из рецептов."""
+
     model = RecipeIngredients
     autocomplete_fields = ['ingredient']
     extra = 1
 
 
 class RecipeTagInline(admin.TabularInline):
+    """Инлайн-блок управления тегами из рецептов."""
+
     model = RecipeTags
     autocomplete_fields = ['tag']
     extra = 1
 
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    """
+    Страничка управления рецептами в админке.
+
+    Включает в себя управление связаннами с рецептами объектами, а именно:
+    - Управление тегами рецептов;
+    - Управление ингредиентами рецептов;
+    """
+
     list_display = ('name', 'get_author_recipe', 'get_favorite_count')
     search_fields = (
         'name', 'author__username', 'author__first_name', 'author__last_name'
@@ -49,19 +51,8 @@ class RecipeAdmin(admin.ModelAdmin):
             '<a href="{}">{}</a>', url, obj.author.__str__()
         )
 
-    def get_favorite_count(self, obj):
+    def get_favorite_count(self, obj: Recipe):
         return RecipeFavorite.objects.filter(recipe=obj).count()
 
     get_author_recipe.short_description = 'Автор рецепта'
     get_favorite_count.short_description = 'В избранном у ...'
-
-
-class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
-    search_fields = ('name', 'slug')
-    ordering = ('name',)
-
-
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(Tag, TagAdmin)

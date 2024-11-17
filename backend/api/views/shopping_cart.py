@@ -4,28 +4,40 @@ from datetime import datetime
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
+from rest_framework.request import Request
 
 from api.models import Recipe, ShoppingCart
 from api.serializers import (
     DownloadShoppingCartSerializer,
     ShoppingCartSerializer
 )
-from core.utils import object_update_or_delete
+from core.utils import object_delete, object_update
 
 
 class ShoppingCartMixin:
-    @action(detail=True, methods=['POST', 'DELETE'], url_path='shopping_cart')
-    def change_shopping_cart(self, request, pk):
-        data = {
+    """Отдельный блок действий для управления корзиной с рецептами."""
+
+    def get_data(self, request: Request, pk: int) -> dict:
+        return {
             'author': request.user,
             'recipe': get_object_or_404(Recipe, id=pk)
         }
-        return object_update_or_delete(
-            data=data,
+
+    @action(detail=True, methods=['POST'], url_path='shopping_cart')
+    def post_shopping_cart(self, request: Request, pk: int):
+        data: dict = self.get_data(request=request, pk=pk)
+        serializer = ShoppingCartSerializer(
+            data={key: obj.id for key, obj in data.items()},
+            context={'request': request}
+        )
+        return object_update(serializer=serializer)
+
+    @post_shopping_cart.mapping.delete
+    def delete_shopping_cart(self, request: Request, pk: int):
+        return object_delete(
+            data=self.get_data(request=request, pk=pk),
             error_mesage='У вас нет данного рецепта в корзине.',
-            model=ShoppingCart,
-            request=request,
-            serializer_class=ShoppingCartSerializer
+            model=ShoppingCart
         )
 
     @action(detail=False, methods=['GET'], url_path='download_shopping_cart')

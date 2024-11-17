@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from api.models.abstract_models import CookbookBaseModel
+from api.models.base_models import CookbookBaseModel
 from api.models.fields import UserForeignKey
 from api.models.ingredient import Ingredient
 from api.models.tag import Tag
@@ -20,6 +20,7 @@ User = get_user_model()
 
 
 class Recipe(CookbookBaseModel):
+    """Модель рецептов."""
 
     tags = models.ManyToManyField(
         Tag, through='RecipeTags', verbose_name='Теги'

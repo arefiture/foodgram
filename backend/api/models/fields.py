@@ -12,6 +12,7 @@ class UserForeignKey(models.ForeignKey):
     - to=User (модель берётся из get_user_model)
     - on_delete=CASCADE
     """
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('on_delete', models.CASCADE)
         kwargs.setdefault('to', User)

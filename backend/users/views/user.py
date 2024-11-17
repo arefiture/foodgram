@@ -3,6 +3,7 @@ from rest_framework import status, response
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 
 from users.models import User
 from users.serializers import AvatarSerializer, UserSerializer
@@ -10,6 +11,8 @@ from users.views.subscription import SubscriptionMixin
 
 
 class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
+    """Вьюсет пользователей."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
@@ -30,7 +33,7 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
         name='set_avatar',
         permission_classes=[IsAuthenticated]
     )
-    def avatar(self, request, *args, **kwargs):
+    def avatar(self, request: Request, *args, **kwargs):
         if 'avatar' not in request.data:
             return response.Response(
                 {'avatar': 'Отсутствует изображение'},
@@ -52,7 +55,7 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
         )
 
     @avatar.mapping.delete
-    def delete_avatar(self, request, *args, **kwargs):
+    def delete_avatar(self, request: Request, *args, **kwargs):
         self.request.user.avatar = None
         self.request.user.save()
         return response.Response(status=status.HTTP_204_NO_CONTENT)

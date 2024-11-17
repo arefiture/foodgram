@@ -1,6 +1,10 @@
+from collections import OrderedDict
 from functools import wraps
+from typing import Optional
 
+from django.db.models import Model
 from rest_framework import serializers
+from rest_framework.request import Request
 
 from api.models import (
     Recipe,
@@ -40,7 +44,7 @@ class BaseRecipeSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(BaseRecipeSerializer):
     """
-    Базовый сериалайзер рецептов.
+    Сериалайзер-основа рецептов.
 
     Содержит дополнительные поля для сериалайзеров рецептов:
     теги, ингредиенты, автор и описание.
@@ -73,18 +77,18 @@ class RecipeGetSerializer(RecipeSerializer):
         )
         read_only_fields = fields
 
-    def get_is_exists(self, obj, model):
-        request = self.context.get('request')
+    def get_is_exists(self, obj: Recipe, model: Model):
+        request: Optional[Request] = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
         return model.objects.filter(
             author=request.user, recipe=obj
         ).exists()
 
-    def get_is_favorited(self, obj):
+    def get_is_favorited(self, obj: Recipe):
         return self.get_is_exists(obj, RecipeFavorite)
 
-    def get_is_in_shopping_cart(self, obj):
+    def get_is_in_shopping_cart(self, obj: Recipe):
         return self.get_is_exists(obj, ShoppingCart)
 
 
@@ -111,7 +115,7 @@ class RecipeChangeSerializer(RecipeSerializer):
     https://gist.github.com/arefiture/bb78eac18e495ab6b8cec3db41c7d771
     Мне такой подход не понравился
     """
-    def validate(self, data):
+    def validate(self, data: OrderedDict):
         ingredients = data.get('recipe_ingredients')
         many_unique_with_minimum_one_validate(
             data_list=ingredients, field_name='ingredients',
@@ -132,10 +136,10 @@ class RecipeChangeSerializer(RecipeSerializer):
             # У create метода первый - validated_data
             # У update метода сначала instance, потом validated_data
             # Т.е. для них последний эл - validated_data
-            validated_data = args[-1]
-            ingredients = validated_data.pop('recipe_ingredients')
+            validated_data: dict = args[-1]
+            ingredients: list[dict] = validated_data.pop('recipe_ingredients')
             tags = validated_data.pop('tags')
-            recipe = func(self, *args, **kwargs)
+            recipe: Recipe = func(self, *args, **kwargs)
 
             recipe.tags.set(tags)
             ingredient_recipe = [
@@ -154,7 +158,7 @@ class RecipeChangeSerializer(RecipeSerializer):
         return Recipe.objects.create(**validated_data)
 
     @added_tags_ingredients
-    def update(self, instance, validated_data):
+    def update(self, instance: Recipe, validated_data: dict):
         super().update(instance, validated_data)
         instance.recipe_ingredients.all().delete()
         return instance

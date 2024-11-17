@@ -1,16 +1,18 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from api.models.abstract_models import CookbookBaseModel
+from api.models.base_models import CookbookBaseModel
 from api.models.ingredient import Ingredient
 from api.models.recipe import Recipe
 from core.constants import (
     MIN_INGREDIENT_AMOUNT_ERROR,
     INGREDIENT_AMOUNT_MIN
 )
+from users.models.user import User
 
 
 class RecipeIngredientsQuerySet(models.QuerySet):
+    """QuerySet модели-связи рецептов и ингредиентов."""
 
     def get_sum_amount(self) -> "RecipeIngredientsQuerySet":
         return self.annotate(total_amount=models.Sum('amount'))
@@ -26,8 +28,13 @@ class RecipeIngredientsQuerySet(models.QuerySet):
 
 
 class ShopCartListManager(models.Manager):
+    """
+    Manager модели-связи рецептов и ингредиентов.
 
-    def get_queryset(self, author) -> RecipeIngredientsQuerySet:
+    Используется для получения список ингредиентов для покупок.
+    """
+
+    def get_queryset(self, author: User) -> RecipeIngredientsQuerySet:
         return (
             RecipeIngredientsQuerySet(self.model)
             .filter(recipe__shopping_cart__author=author)
@@ -38,6 +45,8 @@ class ShopCartListManager(models.Manager):
 
 
 class RecipeIngredients(CookbookBaseModel):
+    """Модель связи рецептов и ингредиентов."""
+
     recipe = models.ForeignKey(
         to=Recipe, verbose_name='Рецепт', on_delete=models.CASCADE
     )

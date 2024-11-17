@@ -3,7 +3,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 
 from api.filters import RecipeFilter
@@ -25,6 +27,8 @@ class RecipeViewSet(
     RecipeFavoriteMixin,
     ShoppingCartMixin
 ):
+    """Вьюсет для рецептов и связных по /recipes/ действий."""
+
     queryset = Recipe.objects.all()
     permission_classes = [ReadOnly]
     filter_backends = [DjangoFilterBackend,]
@@ -47,23 +51,25 @@ class RecipeViewSet(
             return RecipeChangeSerializer
         return super().get_serializer_class()
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer: Serializer):
         serializer.is_valid(raise_exception=True)
         serializer.save(author=self.request.user)
 
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
+    def partial_update(self, request: Request, *args, **kwargs):
+        instance: Recipe = self.get_object()
         data = request.data.copy()
 
-        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer: Serializer = self.get_serializer(
+            instance, data=data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         super().perform_update(serializer)
         return Response(serializer.data)
 
     @action(detail=True, methods=['GET'], url_path='get-link')
-    def get_short_link(self, request, pk):
+    def get_short_link(self, request: Request, pk: int):
         try:
-            recipe = self.get_object()
+            recipe: Recipe = self.get_object()
         except Recipe.DoesNotExist:
             return Response(
                 {'message': 'Не существует такой записи'},
@@ -80,8 +86,10 @@ class RecipeViewSet(
 
 
 class RecipeRedirectView(APIView):
+    """Вьюсет редиректа с короткой ссылки рецепта на абсолютный адрес."""
+
     permission_classes = [ReadOnly]
 
-    def get(self, request, short_link):
+    def get(self, request: Request, short_link: str):
         recipe = get_object_or_404(Recipe, short_link=short_link)
         return redirect(recipe.get_absolute_url())

@@ -16,6 +16,8 @@ from core.constants import (
 
 
 def generate_short_link() -> str:
+    """Генерирует обрезанный до N знаков UUID4."""
+
     return uuid4().hex[:MAX_LENGTH_SHORT_LINK]
 
 
@@ -26,6 +28,7 @@ def object_update(*, serializer: Serializer) -> Response:
     Принимает в себя:
     * serializer - готовый объект сериалайзера.
     """
+
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(
@@ -49,6 +52,7 @@ def object_delete(
     отсутствует в БД
     * model - модель данных
     """
+
     instance = model.objects.filter(**data)
     if not instance.exists():
         return Response(
@@ -59,6 +63,7 @@ def object_delete(
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# TODO: удалить
 def object_update_or_delete(
     *,
     data: dict[str: object],
@@ -79,6 +84,7 @@ def object_update_or_delete(
     * request - данные запроса
     * serializer_class - класс сериализатора
     """
+
     serializer = serializer_class(
         # Возможно, тут стоит добавить проверку на наличие id...
         data={key: obj.id for key, obj in data.items()},
@@ -101,6 +107,7 @@ def many_unique_with_minimum_one_validate(
     * singular - наименование в единственном числе на русском
     * plural - наименование во множественном числе на русском
     """
+
     if not data_list:
         raise ValidationError({
             field_name: TEMPLATE_MESSAGE_MINIMUM_ONE_ERROR.format(
@@ -128,4 +135,5 @@ def to_snake_case(text: str) -> str:
     буквы строки. После этого превращает все буквы в строчные и
     возвращает строку.
     """
+
     return re_sub(r'(?<!^)(?=[A-Z])', '_', text).lower()

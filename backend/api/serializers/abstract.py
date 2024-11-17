@@ -9,12 +9,19 @@ from rest_framework.validators import (
     UniqueTogetherValidator
 )
 
-from api.models import Recipe
+from api.models.abstract_models import BaseActionRecipeModel
+from api.models.recipe import Recipe
 from api.serializers.recipe import BaseRecipeSerializer
 from users.serializers import UserSerializer
 
 
 class BaseRecipeActionSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для добавления рецептов и авторов в связанные таблицы.
+
+    Используется при добавлении в корзину, в избранные.
+    """
+
     author = UserSerializer
     recipe = serializers.PrimaryKeyRelatedField(
         queryset=Recipe.objects.all()
@@ -39,5 +46,5 @@ class BaseRecipeActionSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
         self.Meta.validators = self.get_validators()
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: BaseActionRecipeModel):
         return BaseRecipeSerializer(instance.recipe).data
