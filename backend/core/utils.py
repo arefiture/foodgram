@@ -4,7 +4,6 @@ from uuid import uuid4
 
 from django.db.models import Model
 from rest_framework import status
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer, ValidationError
 
@@ -61,38 +60,6 @@ def object_delete(
         )
     instance.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# TODO: удалить
-def object_update_or_delete(
-    *,
-    data: dict[str: object],
-    error_mesage: str,
-    model: Model,
-    request: Request,
-    serializer_class: Serializer
-) -> Response:
-    """
-    Функция для обновления и удаления данных из action.
-
-    Принимает в себя:
-    * data - словарь данных для проверки в модели. Из данного словаря
-    также берутся данные по id для создания сериалайзера
-    * error_mesage - текст ошибки при удалении, если удаляемый элемент
-    отсутствует в БД
-    * model - модель данных
-    * request - данные запроса
-    * serializer_class - класс сериализатора
-    """
-
-    serializer = serializer_class(
-        # Возможно, тут стоит добавить проверку на наличие id...
-        data={key: obj.id for key, obj in data.items()},
-        context={'request': request}
-    )
-    if request.method == 'POST':
-        return object_update(serializer=serializer)
-    return object_delete(data=data, error_mesage=error_mesage, model=model)
 
 
 def many_unique_with_minimum_one_validate(

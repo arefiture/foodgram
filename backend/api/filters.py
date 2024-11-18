@@ -10,7 +10,7 @@ User = get_user_model()
 class IngredientFilter(filters.FilterSet):
     """Фильтр по названию для ингредиентов."""
 
-    name = filters.CharFilter(field_name="name", lookup_expr="startswith")
+    name = filters.CharFilter(lookup_expr="istartswith")
 
     class Meta:
         model = Ingredient
