@@ -61,7 +61,7 @@ class Command(BaseCommand):
                     ))
                     continue
 
-                file_path = f"../data/{entry['file_name']}.{entry['type']}"
+                file_path = f"data/{entry['file_name']}.{entry['type']}"
                 model = apps.get_model(entry['model'])
                 fields: list = entry['fields']
                 self.stdout.write(self.style.NOTICE(
