@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.query import QuerySet
 from django_filters import rest_framework as filters
 
-from api.models import Ingredient, Recipe
+from api.models import Ingredient, Recipe, Tag
 
 User = get_user_model()
 
@@ -36,7 +36,11 @@ class RecipeFilter(filters.FilterSet):
         method='filter_is_in_shopping_cart'
     )
     author = filters.ModelChoiceFilter(queryset=User.objects.all())
-    tags = filters.AllValuesMultipleFilter(field_name='tags__slug')
+    tags = filters.ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        queryset=Tag.objects.all(),
+        to_field_name='slug',
+    )
 
     class Meta:
         model = Recipe
