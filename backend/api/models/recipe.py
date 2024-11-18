@@ -7,11 +7,11 @@ from api.models.fields import UserForeignKey
 from api.models.ingredient import Ingredient
 from api.models.tag import Tag
 from core.constants import (
+    FRONTEND_DETAIL_URL,
     LENGTH_CHARFIELD_256,
     MAX_LENGTH_SHORT_LINK,
     MIN_COOKING_TIME_ERROR,
     RECIPE_COOKING_TIME_MIN,
-    RECIPE_DETAIL_URL,
     RECIPE_IMAGE_PATH,
 )
 from core.utils import generate_short_link
@@ -62,5 +62,5 @@ class Recipe(CookbookBaseModel):
     def __str__(self) -> str:
         return f'[{self.id}] {self.name}'
 
-    def get_absolute_url(self) -> str:
-        return RECIPE_DETAIL_URL.format(pk=self.pk)
+    def get_frontend_absolute_url(self) -> str:
+        return FRONTEND_DETAIL_URL.format(pk=self.pk)

@@ -25,6 +25,7 @@ from tests.utils.recipe import (
     RESPONSE_SCHEMA_RECIPE,
     RESPONSE_SCHEMA_RECIPES,
     RESPONSE_SCHEMA_SHORT_LINK,
+    URL_GET_FRONT_RECIPE,
     URL_GET_RECIPE,
     URL_GET_SHORT_LINK,
     URL_RECIPES,
@@ -329,7 +330,7 @@ class TestRecipe(BaseTest):
         self.url_redirects_with_found_status(
             client=client,
             url=URL_SHORT_LINK.format(uuid=recipe.short_link),
-            expected_redirect_url=URL_GET_RECIPE.format(id=recipe.id)
+            expected_redirect_url=URL_GET_FRONT_RECIPE.format(id=recipe.id)
         )
 
     def test_update_recipe_author(  # TODO: Возможно, вынести часть логики

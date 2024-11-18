@@ -33,6 +33,7 @@ LENGTH_CHARFIELD_256 = 256
 # Адреса
 RECIPE_IMAGE_PATH = 'recipes/images/'
 RECIPE_DETAIL_URL = '/api/recipes/{pk}/'
+FRONTEND_DETAIL_URL = '/recipes/{pk}/'
 USER_AVATAR_PATH = 'users/'
 
 # Остальные значения

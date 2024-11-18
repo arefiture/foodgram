@@ -124,7 +124,7 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': os.getenv('PAGE_SIZE', 10),
+    'PAGE_SIZE': int(os.getenv('PAGE_SIZE', '10')),
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
 
@@ -140,4 +140,4 @@ DJOSER = {
     }
 }
 
-RECIPES_LIMIT_MAX = os.getenv('RECIPES_LIMIT_MAX', 10)
+RECIPES_LIMIT_MAX = int(os.getenv('RECIPES_LIMIT_MAX', '10'))

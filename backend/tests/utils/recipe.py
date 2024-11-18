@@ -11,6 +11,7 @@ IMAGE = (
 # Адреса страниц
 URL_RECIPES = '/api/recipes/'
 URL_GET_RECIPE = '/api/recipes/{id}/'
+URL_GET_FRONT_RECIPE = '/recipes/{id}/'
 URL_GET_SHORT_LINK = '/api/recipes/{id}/get-link/'
 URL_SHORT_LINK = '/s/{uuid}/'
 

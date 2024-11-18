@@ -86,10 +86,14 @@ class RecipeViewSet(
 
 
 class RecipeRedirectView(APIView):
-    """Вьюсет редиректа с короткой ссылки рецепта на абсолютный адрес."""
+    """
+    Вьюсет редиректа с короткой ссылки рецепта на абсолютный адрес.
+
+    Важно: редирект идёт на адрес фронта, а не /api/!
+    """
 
     permission_classes = [ReadOnly]
 
     def get(self, request: Request, short_link: str):
         recipe = get_object_or_404(Recipe, short_link=short_link)
-        return redirect(recipe.get_absolute_url())
+        return redirect(recipe.get_frontend_absolute_url())
