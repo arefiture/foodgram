@@ -1,18 +1,18 @@
-import os
 from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
-from dotenv import load_dotenv
+from environs import Env
 
-load_dotenv()
+env = Env()
+env.read_env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', get_random_secret_key())
+SECRET_KEY = env.str('SECRET_KEY', get_random_secret_key())
 
-DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
+DEBUG = env.bool('DEBUG', False)
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = env.str('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -60,15 +60,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-if os.getenv('USE_PGSQL', 'false').lower() == 'true':
+if env.bool('USE_PGSQL', False):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('POSTGRES_DB', 'foodgram'),
-            'USER': os.getenv('POSTGRES_USER', 'foodgram'),
-            'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'BestF00D$ite'),
-            'HOST': os.getenv('DB_HOST', ''),
-            'PORT': os.getenv('DB_PORT', 5432)
+            'NAME': env.str('POSTGRES_DB', 'foodgram'),
+            'USER': env.str('POSTGRES_USER', 'foodgram'),
+            'PASSWORD': env.str('POSTGRES_PASSWORD', 'BestF00D$ite'),
+            'HOST': env.str('DB_HOST', ''),
+            'PORT': env.int('DB_PORT', 5432)
         }
     }
 else:
@@ -124,7 +124,7 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': int(os.getenv('PAGE_SIZE', '10')),
+    'PAGE_SIZE': env.int('PAGE_SIZE', 10),
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
 
@@ -140,4 +140,4 @@ DJOSER = {
     }
 }
 
-RECIPES_LIMIT_MAX = int(os.getenv('RECIPES_LIMIT_MAX', '10'))
+RECIPES_LIMIT_MAX = env.int('RECIPES_LIMIT_MAX', 10)
