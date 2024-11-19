@@ -1,6 +1,7 @@
 frontend/node_modules
 infra/frontend/build
 .env
+push.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
