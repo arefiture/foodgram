@@ -87,7 +87,7 @@ class TestShoppingCart(BaseTest):
         response_content_type = response.headers.get('Content-Type')
         # Хотелось бы проверять еще и содержимое, но от разраба к разрабу
         # форма содержимого может быть разной.
-        assert response_content_type in ALLOWED_CONTENT_TYPES, (
+        assert response_content_type.split(';')[0] in ALLOWED_CONTENT_TYPES, (
             'Проверьте, что возвращаемый файл принадлежит к одному из '
             f'типов: {ALLOWED_CONTENT_TYPES}.'
         )

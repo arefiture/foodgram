@@ -1,4 +1,5 @@
 import csv
+import io
 from datetime import datetime
 
 from django.http import HttpResponse
@@ -50,13 +51,14 @@ class ShoppingCartMixin:
         now = datetime.now()
         formatted_time = now.strftime('%d-%m-%Y_%H_%M_%S')
 
-        response = HttpResponse(content_type='text/csv')
+        response = HttpResponse(content_type='text/csv; charset=cp1251')
         filename = f'shopping_cart.csv_{request.user.id}_{formatted_time}'
         response['Content-Disposition'] = (
             f'attachment; filename="{filename}"'
         )
 
-        writer = csv.writer(response)
+        csv_buffer = io.TextIOWrapper(response, encoding='cp1251', newline='')
+        writer = csv.writer(csv_buffer)
         writer.writerow(['Ингредиент', 'Единица измерения', 'Количество'])
         if serializer.data:
             ingredients = serializer.data[0]['ingredients']
@@ -70,4 +72,5 @@ class ShoppingCartMixin:
             )
             writer.writerows(rows)
 
+        csv_buffer.flush()  # Сбрасываем буфер, чтобы данные записались
         return response
