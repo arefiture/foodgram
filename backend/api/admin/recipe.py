@@ -34,14 +34,16 @@ class RecipeAdmin(admin.ModelAdmin):
     - Управление ингредиентами рецептов;
     """
 
-    list_display = ('name', 'get_author_recipe', 'get_favorite_count')
+    list_display = (
+        'name', 'get_author_recipe', 'pub_date', 'get_favorite_count',
+    )
     search_fields = (
         'name', 'author__username', 'author__first_name', 'author__last_name'
     )
     list_filter = ('tags',)
     inlines = [RecipeIngredientInline, RecipeTagInline]
     autocomplete_fields = ('author', )
-    readonly_fields = ('short_link', )
+    readonly_fields = ('short_link', 'pub_date')
     ordering = ('id',)
 
     def get_author_recipe(self, obj: Recipe):

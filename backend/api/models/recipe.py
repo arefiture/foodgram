@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils.timezone import now
 
 from api.models.base_models import CookbookBaseModel
 from api.models.fields import UserForeignKey
@@ -52,12 +53,16 @@ class Recipe(CookbookBaseModel):
         verbose_name='Короткая ссылка', default=generate_short_link,
         max_length=MAX_LENGTH_SHORT_LINK
     )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        default=now, editable=False
+    )
 
     class Meta(CookbookBaseModel.Meta):
         default_related_name = 'recipes'
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ['name']
+        ordering = ['-pub_date']
 
     def __str__(self) -> str:
         return f'[{self.id}] {self.name}'
