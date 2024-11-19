@@ -62,7 +62,7 @@ class Recipe(CookbookBaseModel):
         default_related_name = 'recipes'
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ['-pub_date']
+        ordering = ['pub_date']
 
     def __str__(self) -> str:
         return f'[{self.id}] {self.name}'
