@@ -3,7 +3,6 @@ from django.db import models
 
 from api.models.abstract_models import BaseActionRecipeModel
 
-
 User = get_user_model()
 
 

@@ -1,5 +1,5 @@
-from typing import Any, Optional, Union
 from http import HTTPStatus
+from typing import Any, Optional, Union
 
 from django.db.models import Model
 from jsonschema import validate

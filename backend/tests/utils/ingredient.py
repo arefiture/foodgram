@@ -1,7 +1,4 @@
-from tests.utils.general import (
-    CHANGE_METHOD,
-    installation_method_urls
-)
+from tests.utils.general import CHANGE_METHOD, installation_method_urls
 
 # Адреса страниц
 URL_INGREDIENTS = '/api/ingredients/'

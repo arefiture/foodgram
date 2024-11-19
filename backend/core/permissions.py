@@ -1,8 +1,8 @@
 from django.db.models import Model
 from rest_framework.permissions import (
+    SAFE_METHODS,
     BasePermission,
-    IsAuthenticated,
-    SAFE_METHODS
+    IsAuthenticated
 )
 from rest_framework.request import Request
 from rest_framework.viewsets import GenericViewSet

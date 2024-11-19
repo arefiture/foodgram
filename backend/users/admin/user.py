@@ -1,17 +1,11 @@
 from typing import Optional
 
 from django.contrib import admin
-from django.forms import (
-    ModelForm,
-    PasswordInput,
-)
+from django.forms import ModelForm, PasswordInput
 from django.http.response import HttpResponse
 from rest_framework.request import Request
 
-from api.models import (
-    RecipeFavorite,
-    ShoppingCart
-)
+from api.models import RecipeFavorite, ShoppingCart
 from users.models.user import User
 
 

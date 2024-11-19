@@ -4,11 +4,11 @@ from rest_framework.test import APIClient
 from tests.base_test import BaseTest
 from tests.utils.general import NOT_EXISTING_ID
 from tests.utils.tag import (
+    DENY_CHANGE_METHOD,
     RESPONSE_SCHEMA_TAG,
     RESPONSE_SCHEMA_TAGS,
     URL_GET_TAG,
-    URL_TAGS,
-    DENY_CHANGE_METHOD
+    URL_TAGS
 )
 
 

@@ -1,13 +1,11 @@
 import pytest
 
 from tests.utils.models import (
-    recipe_model,
     recipe_ingredients_model,
+    recipe_model,
     recipe_tags_model
 )
-from tests.utils.recipe import (
-    IMAGE
-)
+from tests.utils.recipe import IMAGE
 
 Recipe = recipe_model()
 RecipeIngredients = recipe_ingredients_model()

@@ -8,15 +8,14 @@ from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from tests.base_test import BaseTest
+from tests.utils.general import NOT_EXISTING_ID
 from tests.utils.models import (
-    recipe_model,
     recipe_favorite_model,
     recipe_ingredients_model,
+    recipe_model,
     recipe_tags_model,
     shopping_cart_model
 )
-from tests.utils.tag import TAG_SET_SLUGS
-from tests.utils.general import NOT_EXISTING_ID
 from tests.utils.recipe import (
     BODY_ONLY_POST_BAD_REQUEST,
     BODY_POST_AND_PATH_BAD_REQUESTS,
@@ -31,6 +30,7 @@ from tests.utils.recipe import (
     URL_RECIPES,
     URL_SHORT_LINK
 )
+from tests.utils.tag import TAG_SET_SLUGS
 
 Recipe = recipe_model()
 RecipeFavorite = recipe_favorite_model()

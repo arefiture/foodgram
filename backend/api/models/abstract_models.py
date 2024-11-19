@@ -5,7 +5,6 @@ from api.models.base_models import CookbookBaseModel
 from api.models.fields import UserForeignKey
 from api.models.recipe import Recipe
 
-
 User = get_user_model()
 
 

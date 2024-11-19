@@ -10,16 +10,10 @@ from rest_framework.views import APIView
 
 from api.filters import RecipeFilter
 from api.models import Recipe
-from api.serializers import (
-    RecipeChangeSerializer,
-    RecipeGetSerializer
-)
+from api.serializers import RecipeChangeSerializer, RecipeGetSerializer
 from api.views.recipe_favorite import RecipeFavoriteMixin
 from api.views.shopping_cart import ShoppingCartMixin
-from core.permissions import (
-    IsAuthor,
-    ReadOnly
-)
+from core.permissions import IsAuthor, ReadOnly
 
 
 class RecipeViewSet(

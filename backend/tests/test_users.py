@@ -27,7 +27,7 @@ from tests.utils.user import (
     URL_GET_USER,
     URL_LOGIN,
     URL_ME,
-    URL_SET_PASSWORD,
+    URL_SET_PASSWORD
 )
 
 User = get_user_model()

@@ -1,5 +1,5 @@
 from djoser import views as djoser_views
-from rest_framework import status, response
+from rest_framework import response, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated

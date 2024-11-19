@@ -12,7 +12,7 @@ from core.constants import (
     MAX_LENGTH_SHORT_LINK,
     MIN_COOKING_TIME_ERROR,
     RECIPE_COOKING_TIME_MIN,
-    RECIPE_IMAGE_PATH,
+    RECIPE_IMAGE_PATH
 )
 from core.utils import generate_short_link
 

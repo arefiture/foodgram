@@ -4,10 +4,7 @@ from django.db import models
 from api.models.base_models import CookbookBaseModel
 from api.models.ingredient import Ingredient
 from api.models.recipe import Recipe
-from core.constants import (
-    MIN_INGREDIENT_AMOUNT_ERROR,
-    INGREDIENT_AMOUNT_MIN
-)
+from core.constants import INGREDIENT_AMOUNT_MIN, MIN_INGREDIENT_AMOUNT_ERROR
 from users.models.user import User
 
 

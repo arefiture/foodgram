@@ -5,12 +5,12 @@ from rest_framework.test import APIClient
 from tests.base_test import BaseTest
 from tests.utils.general import NOT_EXISTING_ID
 from tests.utils.ingredient import (
+    DENY_CHANGE_METHOD,
     INGREDIENT_SEARCH_DATA,
     RESPONSE_SCHEMA_INGREDIENT,
     RESPONSE_SCHEMA_INGREDIENTS,
     URL_GET_INGREDIENT,
-    URL_INGREDIENTS,
-    DENY_CHANGE_METHOD
+    URL_INGREDIENTS
 )
 from tests.utils.models import ingredient_model
 

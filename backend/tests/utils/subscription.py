@@ -1,5 +1,5 @@
-from tests.utils.user import URL_CREATE_USER, URL_GET_USER
 from tests.utils.recipe import RESPONSE_SCHEMA_SHORT_RECIPE
+from tests.utils.user import URL_CREATE_USER, URL_GET_USER
 
 # Адреса страниц
 URL_CREATE_SUBSCRIBE = URL_GET_USER + 'subscribe/'

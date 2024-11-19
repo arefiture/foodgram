@@ -5,9 +5,7 @@
 """
 
 from rest_framework import serializers
-from rest_framework.validators import (
-    UniqueTogetherValidator
-)
+from rest_framework.validators import UniqueTogetherValidator
 
 from api.models.abstract_models import BaseActionRecipeModel
 from api.models.recipe import Recipe

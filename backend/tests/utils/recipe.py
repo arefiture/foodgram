@@ -1,5 +1,5 @@
-from tests.utils.user import RESPONSE_SCHEMA_USER
 from tests.utils.tag import RESPONSE_SCHEMA_TAG
+from tests.utils.user import RESPONSE_SCHEMA_USER
 
 # Константы из postman
 IMAGE = (
