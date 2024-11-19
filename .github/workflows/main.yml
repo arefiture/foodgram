@@ -24,7 +24,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
     - name: Set permissions for media directory
-      run: sudo chmod -R 777 /path/to/your/media
+      run: sudo chmod -R 777 /media
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip 
