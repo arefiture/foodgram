@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-
-from api.models.abstract_models import BaseActionRecipeModel
+from recipes.models.abstract_models import BaseActionRecipeModel
 
 User = get_user_model()
 

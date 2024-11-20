@@ -1,9 +1,9 @@
-from api.serializers.abstract import BaseRecipeActionSerializer
+from api.serializers.base_serializers import AvatarSerializer
 from api.serializers.ingredient import IngredientSerializer
 from api.serializers.recipe import (
     BaseRecipeSerializer,
     RecipeChangeSerializer,
-    RecipeGetSerializer,
+    RecipeGetSerializer
 )
 from api.serializers.recipe_favorite import RecipeFavoriteSerializer
 from api.serializers.recipe_ingredients import (
@@ -12,13 +12,19 @@ from api.serializers.recipe_ingredients import (
 )
 from api.serializers.shopping_cart import (
     DownloadShoppingCartSerializer,
-    ShoppingCartSerializer,
+    ShoppingCartSerializer
+)
+from api.serializers.subscription import (
+    SubscriptionChangedSerializer,
+    SubscriptionGetSerializer
 )
 from api.serializers.tag import TagSerializer
+from api.serializers.user import CurrentUserSerializer, UserSerializer
 
 __all__ = [
-    'BaseRecipeActionSerializer',
+    'AvatarSerializer',
     'BaseRecipeSerializer',
+    'CurrentUserSerializer',
     'DownloadShoppingCartSerializer',
     'IngredientSerializer',
     'RecipeChangeSerializer',
@@ -27,5 +33,8 @@ __all__ = [
     'RecipeIngredientsSetSerializer',
     'RecipeFavoriteSerializer',
     'ShoppingCartSerializer',
-    'TagSerializer'
+    'SubscriptionChangedSerializer',
+    'SubscriptionGetSerializer',
+    'TagSerializer',
+    'UserSerializer'
 ]

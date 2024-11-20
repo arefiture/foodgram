@@ -10,13 +10,13 @@ class Command(BaseCommand):
     data = [
         {
             'file_name': 'ingredients',
-            'model': 'api.Ingredient',
+            'model': 'recipes.Ingredient',
             'fields': ['name', 'measurement_unit'],
             'type': 'csv'
         },
         {
             'file_name': 'tags',
-            'model': 'api.Tag',
+            'model': 'recipes.Tag',
             'fields': ['name', 'slug'],
             'type': 'json'
         }

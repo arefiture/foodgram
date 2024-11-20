@@ -2,32 +2,32 @@ from django.db.models import Model
 
 
 def ingredient_model() -> Model:
-    from api.models import Ingredient
+    from recipes.models import Ingredient
     return Ingredient
 
 
 def recipe_model() -> Model:
-    from api.models import Recipe
+    from recipes.models import Recipe
     return Recipe
 
 
 def recipe_favorite_model() -> Model:
-    from api.models import RecipeFavorite
+    from recipes.models import RecipeFavorite
     return RecipeFavorite
 
 
 def recipe_ingredients_model() -> Model:
-    from api.models import RecipeIngredients
+    from recipes.models import RecipeIngredients
     return RecipeIngredients
 
 
 def recipe_tags_model() -> Model:
-    from api.models import RecipeTags
+    from recipes.models import RecipeTags
     return RecipeTags
 
 
 def shopping_cart_model() -> Model:
-    from api.models import ShoppingCart
+    from recipes.models import ShoppingCart
     return ShoppingCart
 
 
@@ -37,5 +37,5 @@ def subscription_model() -> Model:
 
 
 def tag_model() -> Model:
-    from api.models import Tag
+    from recipes.models import Tag
     return Tag

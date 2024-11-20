@@ -1,9 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-
-from api.models.base_models import CookbookBaseModel
-from api.models.fields import UserForeignKey
-from api.models.recipe import Recipe
+from recipes.models.base_models import CookbookBaseModel
+from recipes.models.fields import UserForeignKey
+from recipes.models.recipe import Recipe
 
 User = get_user_model()
 

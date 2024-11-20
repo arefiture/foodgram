@@ -1,9 +1,9 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from recipes.models.base_models import CookbookBaseModel
+from recipes.models.ingredient import Ingredient
+from recipes.models.recipe import Recipe
 
-from api.models.base_models import CookbookBaseModel
-from api.models.ingredient import Ingredient
-from api.models.recipe import Recipe
 from core.constants import INGREDIENT_AMOUNT_MIN, MIN_INGREDIENT_AMOUNT_ERROR
 from users.models.user import User
 

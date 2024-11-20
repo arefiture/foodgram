@@ -1,8 +1,7 @@
 from django.db import models
-
-from api.models.base_models import CookbookBaseModel
-from api.models.recipe import Recipe
-from api.models.tag import Tag
+from recipes.models.base_models import CookbookBaseModel
+from recipes.models.recipe import Recipe
+from recipes.models.tag import Tag
 
 
 class RecipeTags(CookbookBaseModel):

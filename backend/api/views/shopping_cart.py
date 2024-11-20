@@ -4,15 +4,15 @@ from datetime import datetime
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from recipes.models import Recipe, ShoppingCart
 from rest_framework.decorators import action
 from rest_framework.request import Request
 
-from api.models import Recipe, ShoppingCart
 from api.serializers import (
     DownloadShoppingCartSerializer,
     ShoppingCartSerializer
 )
-from core.utils import object_delete, object_update
+from api.utils import object_delete, object_update
 
 
 class ShoppingCartMixin:

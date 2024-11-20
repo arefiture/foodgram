@@ -1,10 +1,10 @@
 import pytest
 from django.db.models import Model
 from pytest_lazyfixture import lazy_fixture
+from recipes.models.recipe import Recipe
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
-from api.models.recipe import Recipe
 from tests.base_test import BaseTest
 from tests.utils.general import NOT_EXISTING_ID
 from tests.utils.models import subscription_model

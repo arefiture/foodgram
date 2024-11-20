@@ -3,43 +3,24 @@ from functools import wraps
 from typing import Optional
 
 from django.db.models import Model
-from rest_framework import serializers
-from rest_framework.request import Request
-
-from api.models import (
+from recipes.models import (
     Recipe,
     RecipeFavorite,
     RecipeIngredients,
     ShoppingCart,
     Tag
 )
+from rest_framework import serializers
+from rest_framework.request import Request
+
+from api.serializers.base_serializers import BaseRecipeSerializer
 from api.serializers.recipe_ingredients import (
     RecipeIngredientsGetSerializer,
     RecipeIngredientsSetSerializer
 )
 from api.serializers.tag import TagSerializer
-from core.serializers import Base64ImageField
-from core.utils import many_unique_with_minimum_one_validate
-from users.serializers import UserSerializer
-
-
-class BaseRecipeSerializer(serializers.ModelSerializer):
-    """
-    Базовый сериалайзер рецептов.
-
-    Содержит минимум необходимых полей для ответов на некоторые запросы.
-    В перечень полей входят:
-    - id
-    - name
-    - image
-    - cooking_time
-    """
-
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
+from api.serializers.user import UserSerializer
+from api.utils import many_unique_with_minimum_one_validate
 
 
 class RecipeSerializer(BaseRecipeSerializer):

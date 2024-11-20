@@ -5,9 +5,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
+from api.serializers import AvatarSerializer, UserSerializer
+from api.views.subscription import SubscriptionMixin
 from users.models import User
-from users.serializers import AvatarSerializer, UserSerializer
-from users.views.subscription import SubscriptionMixin
 
 
 class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):

@@ -4,9 +4,9 @@ from rest_framework import serializers
 from rest_framework.request import Request
 from rest_framework.validators import UniqueTogetherValidator
 
+from api.serializers.user import UserSerializer
+from api.validators import SubscribeUniqueValidator
 from users.models import Subscription, User
-from users.serializers.user import UserSerializer
-from users.validators import SubscribeUniqueValidator
 
 
 def get_base_recipe_serializer():

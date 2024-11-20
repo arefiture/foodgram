@@ -4,13 +4,53 @@
 несёт поясняющий характер, не более.
 """
 
+import base64
+
+from django.core.files.base import ContentFile
+from recipes.models.abstract_models import BaseActionRecipeModel
+from recipes.models.recipe import Recipe
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from api.models.abstract_models import BaseActionRecipeModel
-from api.models.recipe import Recipe
-from api.serializers.recipe import BaseRecipeSerializer
-from users.serializers import UserSerializer
+from api.serializers.user import UserSerializer
+
+
+class Base64ImageField(serializers.ImageField):
+    """Сериалайзер под картинки. Преобразует входные данные в Base64."""
+
+    def to_internal_value(self, data: str):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+        return super().to_internal_value(data)
+
+
+class AvatarSerializer(serializers.Serializer):
+    """Сериалайзер под аватар."""
+
+    avatar = Base64ImageField(required=False)
+
+
+class BaseRecipeSerializer(serializers.ModelSerializer):
+    """
+    Базовый сериалайзер рецептов.
+
+    Содержит минимум необходимых полей для ответов на некоторые запросы.
+    В перечень полей входят:
+    - id
+    - name
+    - image
+    - cooking_time
+    """
+
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class BaseRecipeActionSerializer(serializers.ModelSerializer):

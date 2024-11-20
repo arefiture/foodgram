@@ -3,12 +3,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from core.utils import object_delete, object_update
-from users.models import Subscription, User
-from users.serializers import (
+from api.serializers import (
     SubscriptionChangedSerializer,
     SubscriptionGetSerializer
 )
+from api.utils import object_delete, object_update
+from users.models import Subscription, User
 
 
 class SubscriptionMixin:

@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db.models.query import QuerySet
 from django_filters import rest_framework as filters
-
-from api.models import Ingredient, Recipe, Tag
+from recipes.models import Ingredient, Recipe, Tag
 
 User = get_user_model()
 

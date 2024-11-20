@@ -1,11 +1,10 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-
-from api.models.recipe import Recipe
-from api.models.recipe_favorite import RecipeFavorite
-from api.models.recipe_ingredients import RecipeIngredients
-from api.models.recipe_tags import RecipeTags
+from recipes.models.recipe import Recipe
+from recipes.models.recipe_favorite import RecipeFavorite
+from recipes.models.recipe_ingredients import RecipeIngredients
+from recipes.models.recipe_tags import RecipeTags
 
 
 class RecipeIngredientInline(admin.TabularInline):

@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'djoser',
     'api.apps.ApiConfig',
     'core.apps.CoreConfig',
+    'recipes.apps.RecipesConfig',
     'users.apps.UsersConfig',
 ]
 
@@ -131,8 +132,8 @@ REST_FRAMEWORK = {
 DJOSER = {
     'HIDE_USERS': False,
     'SERIALIZERS': {
-        'user': 'users.serializers.UserSerializer',
-        'current_user': 'users.serializers.CurrentUserSerializer',
+        'user': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.CurrentUserSerializer',
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],

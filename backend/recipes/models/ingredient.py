@@ -1,6 +1,6 @@
 from django.db import models
+from recipes.models.base_models import CookbookBaseModel
 
-from api.models.base_models import CookbookBaseModel
 from core.constants import LENGTH_CHARFIELD_64, LENGTH_CHARFIELD_128
 
 

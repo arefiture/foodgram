@@ -2,11 +2,11 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.timezone import now
+from recipes.models.base_models import CookbookBaseModel
+from recipes.models.fields import UserForeignKey
+from recipes.models.ingredient import Ingredient
+from recipes.models.tag import Tag
 
-from api.models.base_models import CookbookBaseModel
-from api.models.fields import UserForeignKey
-from api.models.ingredient import Ingredient
-from api.models.tag import Tag
 from core.constants import (
     FRONTEND_DETAIL_URL,
     LENGTH_CHARFIELD_256,

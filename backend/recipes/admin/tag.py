@@ -1,6 +1,5 @@
 from django.contrib import admin
-
-from api.models.tag import Tag
+from recipes.models.tag import Tag
 
 
 @admin.register(Tag)

@@ -1,14 +1,7 @@
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
 
-from core.serializers import Base64ImageField
 from users.models import Subscription, User
-
-
-class AvatarSerializer(serializers.Serializer):
-    """Сериалайзер под аватар."""
-
-    avatar = Base64ImageField(required=False)
 
 
 class CurrentUserSerializer(DjoserUserSerializer):

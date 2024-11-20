@@ -1,5 +1,6 @@
-from api.models import RecipeFavorite
-from api.serializers.abstract import BaseRecipeActionSerializer
+from recipes.models import RecipeFavorite
+
+from api.serializers.base_serializers import BaseRecipeActionSerializer
 from core.constants import REPEAT_ADDED_FAVORITE_ERROR
 
 

@@ -1,7 +1,7 @@
+from recipes.models import RecipeIngredients, ShoppingCart
 from rest_framework import serializers
 
-from api.models import RecipeIngredients, ShoppingCart
-from api.serializers.abstract import BaseRecipeActionSerializer
+from api.serializers.base_serializers import BaseRecipeActionSerializer
 from core.constants import REPEAT_ADDED_SHOPPING_CART_ERROR
 
 
