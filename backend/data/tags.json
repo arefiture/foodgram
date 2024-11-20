@@ -3,5 +3,6 @@
     {"name": "Ужины", "slug": "dinners"},
     {"name": "Десерты", "slug": "desserts"},
     {"name": "Салаты", "slug": "salads"},
-    {"name": "Супы", "slug": "soups"}
+    {"name": "Супы", "slug": "soups"},
+    {"name": "Напитки", "slug":"drinks"}
 ]
