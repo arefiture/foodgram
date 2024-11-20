@@ -5,6 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
+from api.permissions import ReadOnly
 from api.serializers import AvatarSerializer, UserSerializer
 from api.views.subscription import SubscriptionMixin
 from users.models import User
@@ -17,6 +18,7 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
     pagination_class.page_size_query_param = 'limit'
+    permission_classes = [IsAuthenticated | ReadOnly]
 
     @action(
         ["GET", "PUT", "PATCH", "DELETE"],

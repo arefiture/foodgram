@@ -28,7 +28,7 @@ class RecipeViewSet(
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
     serializer_class = RecipeChangeSerializer
-    ordering = ['-pub_date']
+    ordering = ['-id']
 
     def get_permissions(self):
         if self.action == 'download_shopping_cart':
