@@ -1,6 +1,6 @@
 # Ограничения для валидаторов
-INGREDIENT_AMOUNT_MIN = 1
-RECIPE_COOKING_TIME_MIN = 1
+MIN_INTEGER_VALUE = 1
+MAX_INTEGER_VALUE = 32_000
 
 # Шаблоны сообщения ошибки
 TEMPLATE_MESSAGE_MINIMUM_ONE_ERROR = 'Должен быть хотя бы один {field_name}.'
@@ -10,10 +10,16 @@ TEMPLATE_MESSAGE_UNIQUE_ERROR = '{field_name} не должны повторят
 REPEAT_ADDED_FAVORITE_ERROR = 'Нельзя повторно добавить рецепт в избранные.'
 REPEAT_ADDED_SHOPPING_CART_ERROR = 'Нельзя повторно добавить рецепт в корзину.'
 MIN_COOKING_TIME_ERROR = (
-    f'Время не может быть меньше {RECIPE_COOKING_TIME_MIN} минуты.'
+    f'Время не может быть меньше {MIN_INTEGER_VALUE} минуты.'
+)
+MAX_COOKING_TIME_ERROR = (
+    f'Время не может быть меньше {MAX_INTEGER_VALUE} минуты.'
 )
 MIN_INGREDIENT_AMOUNT_ERROR = (
-    f'Количество должно быть равно {INGREDIENT_AMOUNT_MIN} или больше.'
+    f'Количество должно быть равно {MIN_INTEGER_VALUE} или больше.'
+)
+MAX_INGREDIENT_AMOUNT_ERROR = (
+    f'Количество должно быть равно {MAX_INTEGER_VALUE} или больше.'
 )
 USER_EMAIL_ERROR = 'Данный электронный адрес уже используется.'
 USER_USERNAME_ERROR = 'Пользователь с таким ником уже существует.'

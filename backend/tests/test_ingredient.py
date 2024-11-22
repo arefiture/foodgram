@@ -1,4 +1,5 @@
 import pytest
+from pytest_lazyfixture import lazy_fixture
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
@@ -36,8 +37,10 @@ class TestIngredient(BaseTest):
 
     @pytest.mark.parametrize(
         'client',
-        ['api_client', 'first_user_authorized_client'],
-        indirect=True
+        [
+            lazy_fixture('api_client'),
+            lazy_fixture('first_user_authorized_client')
+        ]
     )
     @pytest.mark.usefixtures('ingredients')
     def test_get_ingredients(
@@ -69,8 +72,10 @@ class TestIngredient(BaseTest):
 
     @pytest.mark.parametrize(
         'client',
-        ['api_client', 'first_user_authorized_client'],
-        indirect=True
+        [
+            lazy_fixture('api_client'),
+            lazy_fixture('first_user_authorized_client')
+        ]
     )
     def test_get_ingredient_detail(self, client: APIClient, ingredients: list):
         self.url_get_resource(

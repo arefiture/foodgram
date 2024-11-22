@@ -1,7 +1,7 @@
 from django.db import models
-from recipes.models.base_models import CookbookBaseModel
 
 from core.constants import LENGTH_CHARFIELD_32
+from recipes.models.base_models import CookbookBaseModel
 
 
 class Tag(CookbookBaseModel):

@@ -196,74 +196,74 @@ BODY_ONLY_POST_BAD_REQUEST = {
 
 # Схемы валидации данных в ответах методов
 RESPONSE_SCHEMA_SHORT_RECIPE = {
-    "type": "object",
-    "properties": {
-        "id": {"type": "number"},
-        "name": {"type": "string"},
-        "image": {"type": "string"},
-        "cooking_time": {"type": "number"}
+    'type': 'object',
+    'properties': {
+        'id': {'type': 'number'},
+        'name': {'type': 'string'},
+        'image': {'type': 'string'},
+        'cooking_time': {'type': 'number'}
     },
-    "required": ["id", "name", "image", "cooking_time"],
-    "additionalProperties": False
+    'required': ['id', 'name', 'image', 'cooking_time'],
+    'additionalProperties': False
 }
 
 RESPONSE_SCHEMA_SHORT_LINK = {
-    "type": "object",
-    "properties": {
-        "short-link": {"type": "string"}
+    'type': 'object',
+    'properties': {
+        'short-link': {'type': 'string'}
     },
-    "required": ["short-link"],
-    "additionalProperties": False,
+    'required': ['short-link'],
+    'additionalProperties': False,
 }
 
 RESPONSE_SCHEMA_RECIPE = {
-    "type": "object",
-    "properties": {
-        "id": {"type": "number"},
-        "tags": {
-            "type": "array",
-            "items": RESPONSE_SCHEMA_TAG
+    'type': 'object',
+    'properties': {
+        'id': {'type': 'number'},
+        'tags': {
+            'type': 'array',
+            'items': RESPONSE_SCHEMA_TAG
         },
-        "author": RESPONSE_SCHEMA_USER,
-        "ingredients": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "number"},
-                    "name": {"type": "string"},
-                    "measurement_unit": {"type": "string"},
-                    "amount": {"type": "number"}
+        'author': RESPONSE_SCHEMA_USER,
+        'ingredients': {
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'number'},
+                    'name': {'type': 'string'},
+                    'measurement_unit': {'type': 'string'},
+                    'amount': {'type': 'number'}
                 },
-                "required": ["id", "name", "measurement_unit", "amount"],
-                "additionalProperties": False
+                'required': ['id', 'name', 'measurement_unit', 'amount'],
+                'additionalProperties': False
             }
         },
-        "is_favorited": {"type": "boolean"},
-        "is_in_shopping_cart": {"type": "boolean"},
-        "name": {"type": "string"},
-        "image": {"type": "string"},
-        "text": {"type": "string"},
-        "cooking_time": {"type": "number"}
+        'is_favorited': {'type': 'boolean'},
+        'is_in_shopping_cart': {'type': 'boolean'},
+        'name': {'type': 'string'},
+        'image': {'type': 'string'},
+        'text': {'type': 'string'},
+        'cooking_time': {'type': 'number'}
     },
-    "required": [
-        "id", "tags", "author", "ingredients", "is_favorited",
-        "is_in_shopping_cart", "name", "image", "text", "cooking_time"
+    'required': [
+        'id', 'tags', 'author', 'ingredients', 'is_favorited',
+        'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
     ],
-    "additionalProperties": False
+    'additionalProperties': False
 }
 
 RESPONSE_SCHEMA_RECIPES = {
-    "type": "object",
-    "required": ["count", "next", "previous", "results"],
-    "additionalProperties": False,
-    "properties": {
-        "count": {"type": "number"},
-        "next": {"type": ["string", "null"]},
-        "previous": {"type": ["string", "null"]},
-        "results": {
-            "type": "array",
-            "items": RESPONSE_SCHEMA_RECIPE
+    'type': 'object',
+    'required': ['count', 'next', 'previous', 'results'],
+    'additionalProperties': False,
+    'properties': {
+        'count': {'type': 'number'},
+        'next': {'type': ['string', 'null']},
+        'previous': {'type': ['string', 'null']},
+        'results': {
+            'type': 'array',
+            'items': RESPONSE_SCHEMA_RECIPE
         }
     }
 }

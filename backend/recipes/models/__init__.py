@@ -9,13 +9,13 @@ from recipes.models.shopping_cart import ShoppingCart
 from recipes.models.tag import Tag
 
 __all__ = [
-    "CookbookBaseModel",
-    "Ingredient",
-    "Recipe",
-    "RecipeFavorite",
-    "RecipeIngredients",
-    "RecipeTags",
-    "ShoppingCart",
-    "Tag",
-    "UserForeignKey"
+    'CookbookBaseModel',
+    'Ingredient',
+    'Recipe',
+    'RecipeFavorite',
+    'RecipeIngredients',
+    'RecipeTags',
+    'ShoppingCart',
+    'Tag',
+    'UserForeignKey'
 ]

@@ -1,13 +1,13 @@
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
 
-from users.models import Subscription, User
+from users.models import User
 
 
 class CurrentUserSerializer(DjoserUserSerializer):
     """Сериалайзер под текущего пользователя (для /me)."""
 
-    is_subscribed = serializers.SerializerMethodField()
+    is_subscribed = serializers.BooleanField(default=False, read_only=True)
 
     class Meta:
         model = User
@@ -21,16 +21,15 @@ class CurrentUserSerializer(DjoserUserSerializer):
             'is_subscribed',
         )
 
-    def get_is_subscribed(self, obj):
-        return False
-
 
 class UserSerializer(CurrentUserSerializer):
     """Общий сериалайзер пользователя."""
 
+    is_subscribed = serializers.SerializerMethodField()
+
     def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        return Subscription.objects.filter(
-            user_id=request.user.id,
-            author_recipe_id=obj.id
-        ).exists()
+        request = self.context['request']
+        user = request.user
+        if user.is_anonymous:
+            return False
+        return obj.authors.filter(user=user).exists()

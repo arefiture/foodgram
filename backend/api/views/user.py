@@ -21,7 +21,7 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
     permission_classes = [IsAuthenticated | ReadOnly]
 
     @action(
-        ["GET", "PUT", "PATCH", "DELETE"],
+        ['GET', 'PUT', 'PATCH', 'DELETE'],
         detail=False,
         permission_classes=[IsAuthenticated]
     )
@@ -58,6 +58,9 @@ class UserViewSet(djoser_views.UserViewSet, SubscriptionMixin):
 
     @avatar.mapping.delete
     def delete_avatar(self, request: Request, *args, **kwargs):
-        self.request.user.avatar = None
-        self.request.user.save()
+        user = self.request.user
+        if user.avatar:
+            user.avatar.delete(save=False)
+            user.avatar = None
+            user.save()
         return response.Response(status=status.HTTP_204_NO_CONTENT)

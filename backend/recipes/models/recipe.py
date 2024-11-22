@@ -1,21 +1,23 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.timezone import now
-from recipes.models.base_models import CookbookBaseModel
-from recipes.models.fields import UserForeignKey
-from recipes.models.ingredient import Ingredient
-from recipes.models.tag import Tag
 
 from core.constants import (
     FRONTEND_DETAIL_URL,
     LENGTH_CHARFIELD_256,
+    MAX_COOKING_TIME_ERROR,
+    MAX_INTEGER_VALUE,
     MAX_LENGTH_SHORT_LINK,
     MIN_COOKING_TIME_ERROR,
-    RECIPE_COOKING_TIME_MIN,
+    MIN_INTEGER_VALUE,
     RECIPE_IMAGE_PATH
 )
 from core.utils import generate_short_link
+from recipes.models.base_models import CookbookBaseModel
+from recipes.models.fields import UserForeignKey
+from recipes.models.ingredient import Ingredient
+from recipes.models.tag import Tag
 
 User = get_user_model()
 
@@ -45,8 +47,13 @@ class Recipe(CookbookBaseModel):
         verbose_name='Время приготовления (в минутах)',
         validators=[
             MinValueValidator(
-                RECIPE_COOKING_TIME_MIN,
-                message=MIN_COOKING_TIME_ERROR),
+                MIN_INTEGER_VALUE,
+                message=MIN_COOKING_TIME_ERROR
+            ),
+            MaxValueValidator(
+                MAX_INTEGER_VALUE,
+                message=MAX_COOKING_TIME_ERROR
+            )
         ]
     )
     short_link = models.CharField(

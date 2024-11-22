@@ -22,7 +22,7 @@ class Command(BaseCommand):
         }
         # Добавьте другие файлы, если нужно
     ]
-    help = "Загрузка данных из CSV и JSON файлов в указанные модели"
+    help = 'Загрузка данных из CSV и JSON файлов в указанные модели'
 
     def __init__(self) -> None:
         super().__init__()
@@ -34,7 +34,7 @@ class Command(BaseCommand):
             type=str,
             nargs='?',
             default='all',
-            help="Тип файла для загрузки: csv, json, или all (все файлы)"
+            help='Тип файла для загрузки: csv, json, или all (все файлы)'
         )
 
     @transaction.atomic
@@ -47,8 +47,8 @@ class Command(BaseCommand):
         valid_file_types = {'csv', 'json', 'all'}
         if file_type not in valid_file_types:
             self.stderr.write(self.style.ERROR(
-                f"Неверный тип: {file_type}. Доступны к выбору: csv, json, "
-                "all (по умолчанию, работает как с csv, так и json)."
+                f'Неверный тип: {file_type}. Доступны к выбору: csv, json, '
+                'all (по умолчанию, работает как с csv, так и json).'
             ))
             return
 
@@ -56,17 +56,20 @@ class Command(BaseCommand):
             for entry in self.data:
                 if file_type != 'all' and entry['type'] != file_type:
                     self.stderr.write(self.style.WARNING(
-                        f"Данные {entry} не подходят для загрузки при "
-                        "заданных параметрах."
+                        f'Данные {entry} не подходят для загрузки при '
+                        'заданных параметрах.'
                     ))
                     continue
 
-                file_path = f"data/{entry['file_name']}.{entry['type']}"
-                model = apps.get_model(entry['model'])
+                file_name = entry['file_name']
+                file_type = entry['type']
+                model_name = entry['model']
+                file_path = f'data/{file_name}.{file_type}'
+                model = apps.get_model(model_name)
                 fields: list = entry['fields']
                 self.stdout.write(self.style.NOTICE(
-                    f"Обработка файла: {file_path} для модели: "
-                    f"{entry['model']} ({entry['type']})"
+                    f'Обработка файла: {file_path} для модели: '
+                    f'{model_name} ({file_type})'
                 ))
 
                 # Загружаем данные в зависимости от типа файла
@@ -76,11 +79,11 @@ class Command(BaseCommand):
                     self.load_json(file_path, model, fields)
 
             self.stdout.write(self.style.SUCCESS(
-                f"Данные успешно загружены из: {file_type}")
-            )
+                f'Данные успешно загружены из: {file_type}'
+            ))
 
         except Exception as e:
-            self.stderr.write(self.style.ERROR(f"Ошибка загрузки данных: {e}"))
+            self.stderr.write(self.style.ERROR(f'Ошибка загрузки данных: {e}'))
 
     def load_csv(self, file_path: str, model: models.Model, fields: list):
         """Обработка CSV-файла."""

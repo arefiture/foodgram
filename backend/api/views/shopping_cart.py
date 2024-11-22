@@ -4,7 +4,6 @@ from datetime import datetime
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from recipes.models import Recipe, ShoppingCart
 from rest_framework.decorators import action
 from rest_framework.request import Request
 
@@ -13,6 +12,7 @@ from api.serializers import (
     ShoppingCartSerializer
 )
 from api.utils import object_delete, object_update
+from recipes.models import Recipe, ShoppingCart
 
 
 class ShoppingCartMixin:
@@ -63,13 +63,13 @@ class ShoppingCartMixin:
         if serializer.data:
             ingredients = serializer.data[0]['ingredients']
 
-            rows = map(
-                lambda ingredient: [
+            rows = [
+                [
                     ingredient['name'],
                     ingredient['measurement_unit'],
                     ingredient['total_amount']
-                ], ingredients
-            )
+                ] for ingredient in ingredients
+            ]
             writer.writerows(rows)
 
         csv_buffer.flush()  # Сбрасываем буфер, чтобы данные записались

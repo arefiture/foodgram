@@ -33,17 +33,17 @@ DENY_CHANGE_METHOD = installation_method_urls(
 
 # Схемы валидации данных в ответах методов
 RESPONSE_SCHEMA_TAG = {
-    "type": "object",
-    "properties": {
-        "id": {"type": "number"},
-        "name": {"type": "string"},
-        "slug": {"type": "string"},
+    'type': 'object',
+    'properties': {
+        'id': {'type': 'number'},
+        'name': {'type': 'string'},
+        'slug': {'type': 'string'},
     },
-    "required": ["id", "name", "slug"],
-    "additionalProperties": False
+    'required': ['id', 'name', 'slug'],
+    'additionalProperties': False
 }
 
 RESPONSE_SCHEMA_TAGS = {
-    "type": "array",
-    "items": RESPONSE_SCHEMA_TAG
+    'type': 'array',
+    'items': RESPONSE_SCHEMA_TAG
 }

@@ -1,23 +1,28 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+from core.constants import (
+    MAX_INGREDIENT_AMOUNT_ERROR,
+    MAX_INTEGER_VALUE,
+    MIN_INGREDIENT_AMOUNT_ERROR,
+    MIN_INTEGER_VALUE
+)
 from recipes.models.base_models import CookbookBaseModel
 from recipes.models.ingredient import Ingredient
 from recipes.models.recipe import Recipe
-
-from core.constants import INGREDIENT_AMOUNT_MIN, MIN_INGREDIENT_AMOUNT_ERROR
 from users.models.user import User
 
 
 class RecipeIngredientsQuerySet(models.QuerySet):
     """QuerySet модели-связи рецептов и ингредиентов."""
 
-    def get_sum_amount(self) -> "RecipeIngredientsQuerySet":
+    def get_sum_amount(self) -> 'RecipeIngredientsQuerySet':
         return self.annotate(total_amount=models.Sum('amount'))
 
-    def order_by_ingredient_name(self) -> "RecipeIngredientsQuerySet":
+    def order_by_ingredient_name(self) -> 'RecipeIngredientsQuerySet':
         return self.order_by('ingredient__name')
 
-    def rename_fields(self) -> "RecipeIngredientsQuerySet":
+    def rename_fields(self) -> 'RecipeIngredientsQuerySet':
         return self.values(
             name=models.F('ingredient__name'),
             measurement_unit=models.F('ingredient__measurement_unit')
@@ -54,8 +59,13 @@ class RecipeIngredients(CookbookBaseModel):
         verbose_name='Количество в рецепте',
         validators=[
             MinValueValidator(
-                INGREDIENT_AMOUNT_MIN,
-                message=MIN_INGREDIENT_AMOUNT_ERROR),
+                MIN_INTEGER_VALUE,
+                message=MIN_INGREDIENT_AMOUNT_ERROR
+            ),
+            MaxValueValidator(
+                MAX_INTEGER_VALUE,
+                message=MAX_INGREDIENT_AMOUNT_ERROR
+            )
         ]
     )
 

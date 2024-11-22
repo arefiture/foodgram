@@ -32,8 +32,9 @@ def get_user_token(user: str, password: str) -> dict[str, str]:
 
 def authorized_client(token: str) -> APIClient:
     client = APIClient()
+    auth_token = token['auth_token']
     client.credentials(
-        HTTP_AUTHORIZATION=f'Token {token["auth_token"]}'
+        HTTP_AUTHORIZATION=f'Token {auth_token}'
     )
     return client
 

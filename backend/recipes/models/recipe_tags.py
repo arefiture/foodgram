@@ -1,4 +1,5 @@
 from django.db import models
+
 from recipes.models.base_models import CookbookBaseModel
 from recipes.models.recipe import Recipe
 from recipes.models.tag import Tag

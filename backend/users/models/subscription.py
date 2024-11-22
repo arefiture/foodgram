@@ -32,5 +32,5 @@ class Subscription(AuthBaseModel):
 
     def __str__(self):
         return (
-            f'{self.author_recipe.__str__()} подписан на {self.user.__str__()}'
+            f'{self.user.__str__()} подписан на {self.author_recipe.__str__()}'
         )

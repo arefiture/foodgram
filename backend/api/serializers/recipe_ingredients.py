@@ -1,5 +1,7 @@
-from recipes.models import Ingredient, RecipeIngredients
 from rest_framework import serializers
+
+from core.constants import MAX_INTEGER_VALUE, MIN_INTEGER_VALUE
+from recipes.models import Ingredient, RecipeIngredients
 
 
 class RecipeIngredientsSetSerializer(serializers.ModelSerializer):
@@ -7,6 +9,10 @@ class RecipeIngredientsSetSerializer(serializers.ModelSerializer):
 
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
+    )
+    amount = serializers.IntegerField(
+        max_value=MAX_INTEGER_VALUE,
+        min_value=MIN_INTEGER_VALUE
     )
 
     class Meta:

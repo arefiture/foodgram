@@ -3,13 +3,6 @@ from functools import wraps
 from typing import Optional
 
 from django.db.models import Model
-from recipes.models import (
-    Recipe,
-    RecipeFavorite,
-    RecipeIngredients,
-    ShoppingCart,
-    Tag
-)
 from rest_framework import serializers
 from rest_framework.request import Request
 
@@ -21,6 +14,14 @@ from api.serializers.recipe_ingredients import (
 from api.serializers.tag import TagSerializer
 from api.serializers.user import UserSerializer
 from api.utils import many_unique_with_minimum_one_validate
+from core.constants import MAX_INTEGER_VALUE, MIN_INTEGER_VALUE
+from recipes.models import (
+    Recipe,
+    RecipeFavorite,
+    RecipeIngredients,
+    ShoppingCart,
+    Tag
+)
 
 
 class RecipeSerializer(BaseRecipeSerializer):
@@ -84,6 +85,10 @@ class RecipeChangeSerializer(RecipeSerializer):
     ingredients = RecipeIngredientsSetSerializer(
         many=True,
         source='recipe_ingredients',
+    )
+    cooking_time = serializers.IntegerField(
+        max_value=MAX_INTEGER_VALUE,
+        min_value=MIN_INTEGER_VALUE
     )
 
     class Meta(RecipeSerializer.Meta):

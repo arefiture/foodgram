@@ -7,12 +7,12 @@
 import base64
 
 from django.core.files.base import ContentFile
-from recipes.models.abstract_models import BaseActionRecipeModel
-from recipes.models.recipe import Recipe
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from api.serializers.user import UserSerializer
+from recipes.models.abstract_models import BaseActionRecipeModel
+from recipes.models.recipe import Recipe
 
 
 class Base64ImageField(serializers.ImageField):

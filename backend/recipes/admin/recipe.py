@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
+
 from recipes.models.recipe import Recipe
 from recipes.models.recipe_favorite import RecipeFavorite
 from recipes.models.recipe_ingredients import RecipeIngredients

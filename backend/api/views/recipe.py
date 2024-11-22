@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import Recipe
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -10,10 +9,11 @@ from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 
 from api.filters import RecipeFilter
-from api.permissions import IsAuthor, ReadOnly
+from api.permissions import IsAuthor, IsAuthorOrReadOnly, ReadOnly
 from api.serializers import RecipeChangeSerializer, RecipeGetSerializer
 from api.views.recipe_favorite import RecipeFavoriteMixin
 from api.views.shopping_cart import ShoppingCartMixin
+from recipes.models import Recipe
 
 
 class RecipeViewSet(
@@ -24,25 +24,24 @@ class RecipeViewSet(
     """Вьюсет для рецептов и связных по /recipes/ действий."""
 
     queryset = Recipe.objects.all()
-    permission_classes = [ReadOnly]
+    permission_classes = [IsAuthor | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
     serializer_class = RecipeChangeSerializer
     ordering = ['-id']
 
     def get_permissions(self):
-        if self.action == 'download_shopping_cart':
+        if (
+            self.action == 'download_shopping_cart'
+            or self.request.method == 'POST'
+        ):
             self.permission_classes = [IsAuthenticated]
-        elif self.request.method in ("GET", "POST"):
-            self.permission_classes = [IsAuthenticated | ReadOnly]
-        elif self.request.method in ("PATCH", "DELETE"):
-            self.permission_classes = [IsAuthor]
         return super().get_permissions()
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return RecipeGetSerializer
-        elif self.action in ['create', 'update', 'partial_update']:
+        if self.action in ['create', 'update', 'partial_update']:
             return RecipeChangeSerializer
         return super().get_serializer_class()
 

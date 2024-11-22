@@ -76,8 +76,10 @@ class TestUsers(BaseTest):
 
     @pytest.mark.parametrize(
         'client',
-        ['api_client', 'first_user_authorized_client'],
-        indirect=True
+        [
+            lazy_fixture('api_client'),
+            lazy_fixture('first_user_authorized_client')
+        ]
     )
     @pytest.mark.usefixtures('all_user')
     def test_get_users(self, client: APIClient):
@@ -89,9 +91,12 @@ class TestUsers(BaseTest):
 
     @pytest.mark.parametrize(
         'client',
-        ['api_client', 'first_user_authorized_client'],
-        indirect=True
+        [
+            lazy_fixture('api_client'),
+            lazy_fixture('third_user_authorized_client')
+        ]
     )
+    @pytest.mark.usefixtures('third_user_subscribed_to_first')
     def test_get_user_detail(self, client: APIClient, first_user: Model):
         self.url_get_resource(
             client=client,
@@ -153,7 +158,7 @@ class TestUsers(BaseTest):
             )
             new_item = User.objects.get(id=user.id).avatar
             assert old_item != new_item, (
-                f'Поле {"avatar"} в БД должно обновиться.'
+                'Поле `avatar` в БД должно обновиться.'
             )
         return wrapper
 
@@ -179,17 +184,20 @@ class TestUsers(BaseTest):
         # Сразу же проверка на корректное отображение
         self.test_get_users_me(client, user)
 
-    @check_avatar_update
     @pytest.mark.parametrize(
         'client, user',
         [(
-            lazy_fixture('second_user_authorized_client'),
-            lazy_fixture('second_user')
+            lazy_fixture('first_user_authorized_client'),
+            lazy_fixture('first_user')
         )]
     )
     def test_delete_me_avatar_authorized(
         self, client: APIClient, user: Model
     ):
+        # Прикрепляем аватарку
+        self.test_put_users_me_avatar(client, user)
+
+        old_item = User.objects.get(id=user.id).avatar
         response: Response = client.delete(URL_AVATAR)
         self.url_returns_no_content(
             response=response,
@@ -197,6 +205,10 @@ class TestUsers(BaseTest):
         )
         # Сразу же проверка на корректное отображение
         self.test_get_users_me(client, user)
+        new_item = User.objects.get(id=user.id).avatar
+        assert old_item != new_item, (
+            'Поле `avatar` в БД должно обновиться.'
+        )
 
     def test_reset_password(
         self, first_user_authorized_client: APIClient, first_user: Model

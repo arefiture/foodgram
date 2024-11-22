@@ -1,10 +1,10 @@
 from django.shortcuts import get_object_or_404
-from recipes.models import Recipe, RecipeFavorite
 from rest_framework.decorators import action
 from rest_framework.request import Request
 
 from api.serializers import RecipeFavoriteSerializer
 from api.utils import object_delete, object_update
+from recipes.models import Recipe, RecipeFavorite
 
 
 class RecipeFavoriteMixin:

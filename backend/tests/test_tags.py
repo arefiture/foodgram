@@ -1,4 +1,5 @@
 import pytest
+from pytest_lazyfixture import lazy_fixture
 from rest_framework.test import APIClient
 
 from tests.base_test import BaseTest
@@ -31,8 +32,10 @@ class TestTags(BaseTest):
 
     @pytest.mark.parametrize(
         'client',
-        ['api_client', 'first_user_authorized_client'],
-        indirect=True
+        [
+            lazy_fixture('api_client'),
+            lazy_fixture('first_user_authorized_client')
+        ]
     )
     @pytest.mark.usefixtures('tags')
     def test_get_tags(self, client: APIClient):
@@ -44,8 +47,10 @@ class TestTags(BaseTest):
 
     @pytest.mark.parametrize(
         'client',
-        ['api_client', 'first_user_authorized_client'],
-        indirect=True
+        [
+            lazy_fixture('api_client'),
+            lazy_fixture('first_user_authorized_client')
+        ]
     )
     def test_get_tag_detail(self, client: APIClient, tags: list):
         self.url_get_resource(

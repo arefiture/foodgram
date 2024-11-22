@@ -180,8 +180,10 @@ class TestRecipe(BaseTest):
 
     @pytest.mark.parametrize(
         'client',
-        ['api_client', 'first_user_authorized_client'],
-        indirect=True
+        [
+            lazy_fixture('api_client'),
+            lazy_fixture('first_user_authorized_client')
+        ]
     )
     @pytest.mark.usefixtures('all_recipes')
     def test_get_recipes(
@@ -197,7 +199,7 @@ class TestRecipe(BaseTest):
         # page_size = YourViewSet().pagination_class.page_size
         self.url_pagination_results(
             data=response.json(),
-            limit=settings.REST_FRAMEWORK.get("PAGE_SIZE", 10)
+            limit=settings.REST_FRAMEWORK.get('PAGE_SIZE', 10)
         )
 
     @pytest.mark.parametrize('count', [1, 5, 20])
@@ -239,7 +241,7 @@ class TestRecipe(BaseTest):
             response=response,
             model=Recipe,
             filters={'author_id': user.id},
-            limit=settings.REST_FRAMEWORK.get("PAGE_SIZE", 10)
+            limit=settings.REST_FRAMEWORK.get('PAGE_SIZE', 10)
         )
 
     @pytest.mark.parametrize(
@@ -262,7 +264,7 @@ class TestRecipe(BaseTest):
             response=response,
             model=Recipe,
             filters={'tags__slug__in': slug_list},
-            limit=settings.REST_FRAMEWORK.get("PAGE_SIZE", 10)
+            limit=settings.REST_FRAMEWORK.get('PAGE_SIZE', 10)
         )
 
     @pytest.mark.parametrize(
