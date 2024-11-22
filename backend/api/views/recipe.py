@@ -9,7 +9,7 @@ from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 
 from api.filters import RecipeFilter
-from api.permissions import IsAuthor, IsAuthorOrReadOnly, ReadOnly
+from api.permissions import IsAuthorOrReadOnly, ReadOnly
 from api.serializers import RecipeChangeSerializer, RecipeGetSerializer
 from api.views.recipe_favorite import RecipeFavoriteMixin
 from api.views.shopping_cart import ShoppingCartMixin
@@ -24,7 +24,7 @@ class RecipeViewSet(
     """Вьюсет для рецептов и связных по /recipes/ действий."""
 
     queryset = Recipe.objects.all()
-    permission_classes = [IsAuthor | ReadOnly]
+    permission_classes = [IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
     serializer_class = RecipeChangeSerializer
