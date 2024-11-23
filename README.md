@@ -4,6 +4,7 @@
 
 ## Ревьюверу:
 
+Проект размещён тут: https://arefiture.zapto.org
 Для админки:
 * email: reviewer@ya.ru
 * password: 4eck_myC09E_carefully

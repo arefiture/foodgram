@@ -62,14 +62,14 @@ class Command(BaseCommand):
                     continue
 
                 file_name = entry['file_name']
-                file_type = entry['type']
+                type_name = entry['type']
                 model_name = entry['model']
-                file_path = f'data/{file_name}.{file_type}'
+                file_path = f'data/{file_name}.{type_name}'
                 model = apps.get_model(model_name)
                 fields: list = entry['fields']
                 self.stdout.write(self.style.NOTICE(
                     f'Обработка файла: {file_path} для модели: '
-                    f'{model_name} ({file_type})'
+                    f'{model_name} ({type_name})'
                 ))
 
                 # Загружаем данные в зависимости от типа файла
@@ -79,7 +79,7 @@ class Command(BaseCommand):
                     self.load_json(file_path, model, fields)
 
             self.stdout.write(self.style.SUCCESS(
-                f'Данные успешно загружены из: {file_type}'
+                f'Данные успешно загружены из: {type_name}'
             ))
 
         except Exception as e:
